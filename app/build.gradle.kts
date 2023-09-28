@@ -67,5 +67,6 @@ dependencies {
     implementation("io.insert-koin:koin-android:3.4.2")
     implementation("io.insert-koin:koin-androidx-navigation:3.4.2")
     implementation("io.insert-koin:koin-androidx-compose:3.4.2")
-    implementation(project(":mediapicker"))
+    implementation("com.github.luisangeldd:MediaPicker:1.0")
+    //implementation(project(":mediapicker"))
 }
