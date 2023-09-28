@@ -35,7 +35,7 @@ Español
 
 ## 📖 Características
 
-- Obtenga videos y archivos de imágenes/imágenes desde un dispositivo Android.
+- Obtenga videos y archivos de video/imágenes de su dispositivo Android.
 
 - Un clic para seleccionar cualquier medio de su dispositivo.
 
