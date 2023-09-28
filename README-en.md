@@ -3,7 +3,7 @@
 
 # MediaPicker
 
-### Video/Picture Fetch from Android device, alternative to the default file manager
+### Fetch Video/Picture file from Android device, alternative to the default file manager
 
 English
 &nbsp;&nbsp;| &nbsp;&nbsp;
