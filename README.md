@@ -6,7 +6,7 @@
 
 Español
 &nbsp;&nbsp;| &nbsp;&nbsp;
-<a href="https://github.com/luisangeldd/MediaPicker/blob/main/README-es.md">English</a>
+<a href="https://github.com/luisangeldd/MediaPicker/blob/main/README-en.md">English</a>
 
 <div align="left">
 
