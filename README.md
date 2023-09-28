@@ -53,28 +53,25 @@ Step 1. Add the dependency
 
 ```groovy
 dependencies {
+    ...
     implementation 'com.github.luisangeldd:MediaPicker:Tag'
+    implementation 'io.insert-koin:koin-android:Tag'
+    implementation 'io.insert-koin:koin-androidx-navigation:Tag'
+    implementation 'io.insert-koin:koin-androidx-compose:Tag'
 }
 ```
 - Kotlin DSL
 
 ```kotlin
 dependencies {
+    ...
     implementation("com.github.luisangeldd:MediaPicker:Tag")
-}
-```
-Step 2. Use
-
-In you gradle package add the next dependencies
-```kotlin
-dependencies {
-   ...
     implementation("io.insert-koin:koin-android:Tag")
     implementation("io.insert-koin:koin-androidx-navigation:Tag")
     implementation("io.insert-koin:koin-androidx-compose:Tag")
 }
 ```
-Create a applicacion class to inject the modules
+Step 2. Create a application class to inject the modules
 ```kotlin
 class App: Application() {
     override fun onCreate() {
@@ -87,7 +84,7 @@ class App: Application() {
     }
 }
 ```
-In your manifest add the next 
+Step 3. Configure your manifest fil
 ```kotlin
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -122,6 +119,7 @@ In your manifest add the next
     </application>
 </manifest>
 ```
+Step 4. Create a provider_paths.xml file 
 To the file provider_paths.xml that locate in resource/xml of your app and contain the next
 ```kotlin
 <?xml version="1.0" encoding="utf-8"?>
