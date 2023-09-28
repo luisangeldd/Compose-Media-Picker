@@ -41,4 +41,16 @@ English
 
 - [Material Design 3](https://m3.material.io/) style UI.
 
-## ⬇️ Download
+## ⬇️ How to
+
+Step 1. Add the dependency
+
+##- Groovy
+dependencies {
+    implementation 'com.github.JorgeAgulloM:Utils-kt:Tag'
+}
+##- Kotlin DSL
+dependencies {
+    implementation("com.github.JorgeAgulloM:Utils-kt:Tag")
+}
+Step 2. Use
