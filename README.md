@@ -1,6 +1,6 @@
 <div align="center">
 
-# MediaPicker API
+# MediaPicker
 
 ### Video/Picture Fetch from Android device, alternative to the default file manager
 
