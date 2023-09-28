@@ -84,7 +84,7 @@ class App: Application() {
     }
 }
 ```
-Step 3. Configure your manifest fil
+Step 3. Configure your manifest file
 ```kotlin
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
