@@ -142,3 +142,19 @@ To the file provider_paths.xml that locate in resource/xml of your app and conta
         path="." />
 </paths>
 ```
+Step 5. Use
+```kotlin
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            AppNameTheme {
+                MediaPicker(
+                    getMedia = {}
+                )
+            }
+        }
+    }
+}
+
+```
