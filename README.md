@@ -2,15 +2,15 @@
 
 # MediaPicker
 
-### Video/Picture Fetch from Android device, alternative to the default file manager
+### Obtenga archivos de video/imagen desde un dispositivo Android, alternativa al administrador de archivos predeterminado
 
-English
+Español
 &nbsp;&nbsp;| &nbsp;&nbsp;
-<a href="https://github.com/luisangeldd/MediaPicker/blob/main/README-es.md">Spanish</a>
+<a href="https://github.com/luisangeldd/MediaPicker/blob/main/README-es.md">English</a>
 
 <div align="left">
 
-## 📱 Screenshots
+## 📱 Capturas
 
 <div align="center">
 <div>
@@ -23,7 +23,7 @@ English
  
 <br>
 
-## 📱 Video
+## 📱 Videos
 
 <div align="center">
 <div>
@@ -33,23 +33,23 @@ English
 
 <br>
 
-## 📖 Features
+## 📖 Características
 
-- Fetch videos and pictures/images files from android device.
+- Obtenga videos y archivos de imágenes/imágenes desde un dispositivo Android.
 
-- One click to select any media, from your device.
+- Un clic para seleccionar cualquier medio de su dispositivo.
 
-- Easy to use and user-friendly.
+- Fácil de usar y amigable.
 
-- Inject dependency whit Koin, simple and fast.
+- Inyeccion de dependencia con Koin, simple y rápido.
 
-- [Material Design 3](https://m3.material.io/) style UI.
+- Interfaz de usuario de estilo [Material Design 3](https://m3.material.io/).
 
-- Only Compose and Kotlin.
+- Sólo Compose y Kotlin.
 
-## ⬇️ How to
+## ⬇️ Cómo implemetar
 
-Step 1. Add the dependency
+Paso 1. Agregar las dependencias
 
 - Groovy
 
@@ -73,7 +73,7 @@ dependencies {
     implementation("io.insert-koin:koin-androidx-compose:Tag")
 }
 ```
-Step 2. Create a application class to inject the modules
+Step 2. Crear una clase de aplicación para inyectar los módulos.
 ```kotlin
 class App: Application() {
     override fun onCreate() {
@@ -86,7 +86,7 @@ class App: Application() {
     }
 }
 ```
-Step 3. Configure your manifest file
+Step 3. Configura tu archivo de manifiesto
 ```kotlin
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -121,8 +121,9 @@ Step 3. Configure your manifest file
     </application>
 </manifest>
 ```
-Step 4. Create a provider_paths.xml file 
-To the file provider_paths.xml that locate in resource/xml of your app and contain the next
+Step 4. Crear el archivo proveedor_paths.xml
+<br>
+El archivo proveedor_paths.xml se ubicara en res/xml de su aplicación y contendra lo siguiente
 ```kotlin
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
@@ -144,7 +145,7 @@ To the file provider_paths.xml that locate in resource/xml of your app and conta
         path="." />
 </paths>
 ```
-Step 5. Use
+Step 5. Usar en tu aplicación
 ```kotlin
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
