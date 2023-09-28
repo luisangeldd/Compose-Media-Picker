@@ -68,11 +68,24 @@ Step 2. Use
 In you gradle package add the next dependencies
 ```kotlin
 dependencies {
-
    ...
     implementation("io.insert-koin:koin-android:Tag")
     implementation("io.insert-koin:koin-androidx-navigation:Tag")
     implementation("io.insert-koin:koin-androidx-compose:Tag")
 }
 ```
+Create a applicacion class to inject the modules
+```kotlin
+class App: Application() {
+    override fun onCreate() {
+        super.onCreate()
+        GlobalContext.startKoin {
+            androidLogger()
+            androidContext(this@App)
+            modules(appModule)
+        }
+    }
+}
+```
+
 
