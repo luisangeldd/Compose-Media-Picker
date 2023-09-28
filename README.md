@@ -25,7 +25,7 @@ English
 
 <div align="center">
 <div>
-<img width="" src="metadata/video.gift"  width="100%" />
+<img width="" src="metadata/video.gif"  width="100%" />
 </div>
 </div>
 
