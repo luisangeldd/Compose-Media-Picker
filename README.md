@@ -73,7 +73,7 @@ dependencies {
     implementation("io.insert-koin:koin-androidx-compose:Tag")
 }
 ```
-Step 2. Crear una clase de aplicación para inyectar los módulos.
+Paso 2. Crear una clase de aplicación para inyectar los módulos.
 ```kotlin
 class App: Application() {
     override fun onCreate() {
@@ -86,7 +86,7 @@ class App: Application() {
     }
 }
 ```
-Step 3. Configura tu archivo de manifiesto
+Paso 3. Configura tu archivo de manifiesto
 ```kotlin
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -121,7 +121,7 @@ Step 3. Configura tu archivo de manifiesto
     </application>
 </manifest>
 ```
-Step 4. Crear el archivo proveedor_paths.xml
+Paso 4. Crear el archivo proveedor_paths.xml
 <br>
 El archivo proveedor_paths.xml se ubicara en res/xml de su aplicación y contendra lo siguiente
 ```kotlin
@@ -145,7 +145,7 @@ El archivo proveedor_paths.xml se ubicara en res/xml de su aplicación y contend
         path="." />
 </paths>
 ```
-Step 5. Usar en tu aplicación
+Paso 5. Usar en tu aplicación
 ```kotlin
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
