@@ -2,7 +2,7 @@
 
 # MediaPicker
 
-### Obtenga archivos de video/imagen desde un dispositivo Android, alternativa al administrador de archivos predeterminado
+### Obtenga archivos de video/imagen de su dispositivo Android, alternativa al administrador de archivos predeterminado de Android.
 
 Español
 &nbsp;&nbsp;| &nbsp;&nbsp;
