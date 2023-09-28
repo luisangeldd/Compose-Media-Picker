@@ -45,12 +45,18 @@ English
 
 Step 1. Add the dependency
 
-##- Groovy
+-Groovy
+
+```groovy
 dependencies {
-    implementation 'com.github.JorgeAgulloM:Utils-kt:Tag'
+    implementation 'com.github.luisangeldd:MediaPicker:Tag'
 }
-##- Kotlin DSL
+```
+-Kotlin DSL
+
+```kotlin
 dependencies {
-    implementation("com.github.JorgeAgulloM:Utils-kt:Tag")
+    implementation("com.github.luisangeldd:MediaPicker:Tag")
 }
+```
 Step 2. Use
