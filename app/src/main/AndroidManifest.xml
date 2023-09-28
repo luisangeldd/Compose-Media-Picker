@@ -16,9 +16,9 @@
         android:maxSdkVersion="32" />
     <application
         android:name=".App"
-        android:allowBackup="true"
         android:requestLegacyExternalStorage="true"
         android:requestRawExternalStorageAccess="true"
+        android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
