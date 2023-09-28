@@ -41,6 +41,8 @@ English
 
 - Easy to use and user-friendly.
 
+- Inject dependency whit Koin, simple and fast.
+
 - [Material Design 3](https://m3.material.io/) style UI.
 
 ## ⬇️ How to
@@ -62,3 +64,15 @@ dependencies {
 }
 ```
 Step 2. Use
+
+In you gradle package add the next dependencies
+```kotlin
+dependencies {
+
+   ...
+    implementation("io.insert-koin:koin-android:Tag")
+    implementation("io.insert-koin:koin-androidx-navigation:Tag")
+    implementation("io.insert-koin:koin-androidx-compose:Tag")
+}
+```
+
