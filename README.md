@@ -45,6 +45,8 @@ English
 
 - [Material Design 3](https://m3.material.io/) style UI.
 
+- Only Compose and Kotlin.
+
 ## ⬇️ How to
 
 Step 1. Add the dependency
