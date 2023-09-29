@@ -48,7 +48,7 @@ English
 
 - Only Compose and Kotlin.
 
-- Inspired by Android's [photo picker](https://developer.android.com/training/data-storage/shared/photopicker).
+- Inspired by Android [photo picker](https://developer.android.com/training/data-storage/shared/photopicker).
 
 ## ⬇️ How to
 
