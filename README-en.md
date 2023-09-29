@@ -48,6 +48,8 @@ English
 
 - Only Compose and Kotlin.
 
+- Inspired by Android's [photo picker](https://developer.android.com/training/data-storage/shared/photopicker?hl=es-419).
+
 ## ⬇️ How to
 
 Step 1. Add the dependency
