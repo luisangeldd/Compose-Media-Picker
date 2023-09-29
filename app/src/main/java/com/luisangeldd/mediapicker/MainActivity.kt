@@ -14,7 +14,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import api.luisangeldd.mediapicker.MediaPicker
+import api.luisangeldd.mediapicker.k.MediaPicker
 import com.luisangeldd.mediapicker.ui.theme.MediaPickerTheme
 
 class MainActivity : ComponentActivity() {

@@ -1,7 +1,7 @@
 package com.luisangeldd.mediapicker
 
 import android.app.Application
-import api.luisangeldd.mediapicker.utils.appModule
+import api.luisangeldd.mediapicker.k.utils.appModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.GlobalContext
