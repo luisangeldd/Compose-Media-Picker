@@ -47,6 +47,8 @@ Español
 
 - Sólo Compose y Kotlin.
 
+- Inspirado en el [selector de fotos](https://developer.android.com/training/data-storage/shared/photopicker?hl=es-419) de Android.
+
 ## ⬇️ Cómo implemetar
 
 Paso 1. Agregar las dependencias
