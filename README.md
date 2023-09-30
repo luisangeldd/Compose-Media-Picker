@@ -159,6 +159,7 @@ El archivo proveedor_paths.xml se ubicara en res/xml de su aplicación y contend
 </paths>
 ```
 Paso 5. Usar en tu aplicación
+- Si usaras Koin en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura
 ```kotlin
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -172,5 +173,20 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
+```
+- Si usaras Dagger Hilt en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura
+- ```kotlin
+@AndroidEntryPoint
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            AppNameTheme {
+                MediaPicker(
+                    getMedia = {}
+                )
+            }
+        }
+    }
+}
 ```
