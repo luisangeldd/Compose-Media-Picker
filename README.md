@@ -41,7 +41,7 @@ Español
 
 - Fácil de usar y amigable.
 
-- Inyeccion de dependencia con Koin, simple y rápido.
+- Inyeccion de dependencia con Koin o Dagger Hilt, simple y rápido.
 
 - Interfaz de usuario de estilo [Material Design 3](https://m3.material.io/).
 
@@ -76,6 +76,7 @@ dependencies {
 }
 ```
 Paso 2. Crear una clase de aplicación para inyectar los módulos.
+- Si usaras Koin en tu proyecto para implementar dependencias usa la siguiente estructura
 ```kotlin
 class App: Application() {
     override fun onCreate() {
@@ -85,6 +86,16 @@ class App: Application() {
             androidContext(this@App)
             modules(appModule)
         }
+    }
+}
+```
+- Si usaras Dagger Hilt en tu proyecto para implementar dependencias usa la siguiente estructura
+- ```kotlin
+@HiltAndroidApp
+class App: Application() {
+    override fun onCreate() {
+        super.onCreate()
+        
     }
 }
 ```
