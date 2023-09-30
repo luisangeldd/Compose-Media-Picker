@@ -175,7 +175,7 @@ class MainActivity : ComponentActivity() {
 }
 ```
 - Si usaras Dagger Hilt en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura
-- ```kotlin
+```kotlin
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
