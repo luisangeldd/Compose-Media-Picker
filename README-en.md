@@ -42,7 +42,7 @@ English
 
 - Easy to use and user-friendly.
 
-- Inject dependency whit Koin, simple and fast.
+- Dependency injection with Koin or Dagger Hilt, simple and fast.
 
 - [Material Design 3](https://m3.material.io/) style UI.
 
@@ -53,7 +53,8 @@ English
 ## ⬇️ How to
 
 Step 1. Add the dependency
-
+<br>
+If you would use Koin in your project to implement dependency injection, use the following structure, the version is assigned a K plus the version (K1.0.0)
 - Groovy
 
 ```groovy
@@ -76,7 +77,43 @@ dependencies {
     implementation("io.insert-koin:koin-androidx-compose:Tag")
 }
 ```
+If you would use Dagger Hilt in your project to implement dependency injection, use the following structure, the version is assigned an H plus the version (H1.0.0)
+<br>
+- Groovy
+```groovy
+plugins {
+    id 'com.google.dagger.hilt.android'
+    id 'kotlin-kapt'
+}
+```
+```groovy
+dependencies {
+    ...
+    implementation 'com.github.luisangeldd:MediaPicker:Tag'
+    implementation 'androidx.hilt:hilt-navigation-compose:Tag'
+    implementation 'com.google.dagger:hilt-android:Tag'
+    kapt 'io.insert-koin:koin-androidx-compose:Tag'
+}
+```
+- Kotlin DSL
+```kotlin
+plugins {
+    ...
+    id("com.google.dagger.hilt.android")
+    id("kotlin-kapt")
+}
+```
+```kotlin
+dependencies {
+    ...
+    implementation("com.github.luisangeldd:MediaPicker:Tag")
+    implementation("androidx.hilt:hilt-navigation-compose:Tag")
+    implementation("com.google.dagger:hilt-android:Tag")
+    kapt("com.google.dagger:hilt-compiler:Tag")
+}
+```
 Step 2. Create a application class to inject the modules
+- If you were to use Koin, use the following structure
 ```kotlin
 class App: Application() {
     override fun onCreate() {
@@ -86,6 +123,16 @@ class App: Application() {
             androidContext(this@App)
             modules(appModule)
         }
+    }
+}
+```
+- If you were to use Dagger Hilt use the following structure
+```kotlin
+@HiltAndroidApp
+class App: Application() {
+    override fun onCreate() {
+        super.onCreate()
+        
     }
 }
 ```
@@ -148,6 +195,7 @@ To the file provider_paths.xml that locate in resource/xml of your app and conta
 </paths>
 ```
 Step 5. Use
+- If you were to use Koin, use the following structure
 ```kotlin
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -163,3 +211,39 @@ class MainActivity : ComponentActivity() {
 }
 
 ```
+- If you were to use Dagger Hilt use the following structure
+```kotlin
+@AndroidEntryPoint
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            AppNameTheme {
+                MediaPicker(
+                    getMedia = {}
+                )
+            }
+        }
+    }
+}
+```
+## 🧱 Credits
+- [kotlin](https://kotlinlang.org/)
+- [MediaStore](https://developer.android.com/reference/android/provider/MediaStore)
+- [Google Fonts:Icons](https://fonts.google.com/icons)
+
+## License
+
+    Copyright 2023 luisangeldd
+ 
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+ 
+        http://www.apache.org/licenses/LICENSE-2.0
+ 
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
