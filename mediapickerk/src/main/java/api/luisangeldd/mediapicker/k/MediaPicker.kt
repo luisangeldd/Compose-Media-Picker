@@ -377,7 +377,7 @@ private fun MediaCarousel(media:List<MediaUserV0>, removeItem: (Int) -> Unit){
     }
 }
 @Composable
-fun LaunchButton(launch: () -> Unit){
+private fun LaunchButton(launch: () -> Unit){
     Box (modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
         FilledTonalIconButton(
             modifier = Modifier.size(100.dp),
