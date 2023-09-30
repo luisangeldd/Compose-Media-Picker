@@ -76,7 +76,7 @@ dependencies {
 }
 ```
 Paso 2. Crear una clase de aplicación para inyectar los módulos.
-- Si usaras Koin en tu proyecto para implementar dependencias usa la siguiente estructura
+- Si usaras Koin en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura
 ```kotlin
 class App: Application() {
     override fun onCreate() {
@@ -89,7 +89,7 @@ class App: Application() {
     }
 }
 ```
-- Si usaras Dagger Hilt en tu proyecto para implementar dependencias usa la siguiente estructura
+- Si usaras Dagger Hilt en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura
 ```kotlin
 @HiltAndroidApp
 class App: Application() {
