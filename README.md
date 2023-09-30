@@ -52,7 +52,7 @@ Español
 ## ⬇️ Cómo implemetar
 
 Paso 1. Agregar las dependencias
-- Si usaras Koin en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura a la version se le asigna una H más la version
+- Si usaras Koin en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura a la version se le asigna una H más la version (H###)
 
 - Groovy
 
