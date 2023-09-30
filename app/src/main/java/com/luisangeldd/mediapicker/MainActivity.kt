@@ -14,15 +14,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import api.luisangeldd.mediapicker.k.MediaPicker
+import api.luisangeldd.mediapicker.h.MediaPicker
 import com.luisangeldd.mediapicker.ui.theme.MediaPickerTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             val mainViewModel = viewModel<MainViewModel>()
-            val mediaUser by mainViewModel.mediaSelectedUser.collectAsState()
+            //val mediaUser by mainViewModel.mediaSelectedUser.collectAsState()
             MediaPickerTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -31,13 +33,13 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Column {
                         MediaPicker(
-                            getMedia = mainViewModel::getMedia
+                            getMedia = {  }
                         )
-                        LazyColumn(content = {
+                        /*LazyColumn(content = {
                             items(mediaUser){
                                 Text(text = "${it.fileMedia}")
                             }
-                        })
+                        })*/
                     }
                 }
             }
