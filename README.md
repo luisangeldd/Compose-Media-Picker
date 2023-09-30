@@ -198,7 +198,7 @@ El archivo proveedor_paths.xml se ubicara en res/xml de su aplicación y contend
 ```
 Paso 5. Usar en tu aplicación
 <br>
-Si usaras Koin usa la siguiente estructura
+- Si usaras Koin usa la siguiente estructura
 ```kotlin
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -213,7 +213,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 ```
-Si usaras Dagger Hilt usa la siguiente estructura
+- Si usaras Dagger Hilt usa la siguiente estructura
 ```kotlin
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
