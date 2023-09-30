@@ -112,7 +112,7 @@ dependencies {
 }
 ```
 Paso 2. Crear una clase de aplicación para inyectar los módulos.
-- Si usaras Koin en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura
+- Si usaras Koin usa la siguiente estructura
 ```kotlin
 class App: Application() {
     override fun onCreate() {
@@ -125,7 +125,7 @@ class App: Application() {
     }
 }
 ```
-- Si usaras Dagger Hilt en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura
+- Si usaras Dagger Hilt usa la siguiente estructura
 ```kotlin
 @HiltAndroidApp
 class App: Application() {
@@ -195,7 +195,7 @@ El archivo proveedor_paths.xml se ubicara en res/xml de su aplicación y contend
 </paths>
 ```
 Paso 5. Usar en tu aplicación
-- Si usaras Koin en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura
+- Si usaras Koin usa la siguiente estructura
 ```kotlin
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -210,7 +210,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 ```
-- Si usaras Dagger Hilt en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura
+- Si usaras Dagger Hilt usa la siguiente estructura
 ```kotlin
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
