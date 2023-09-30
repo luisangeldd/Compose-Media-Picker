@@ -172,6 +172,7 @@ Step 3. Configure your manifest file
 </manifest>
 ```
 Step 4. Create a provider_paths.xml file 
+<br>
 To the file provider_paths.xml that locate in resource/xml of your app and contain the next
 ```kotlin
 <?xml version="1.0" encoding="utf-8"?>
