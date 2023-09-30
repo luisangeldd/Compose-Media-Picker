@@ -59,7 +59,7 @@ Paso 1. Agregar las dependencias
 ```groovy
 dependencies {
     ...
-    implementation 'com.github.luisangeldd:MediaPicker:HTag'
+    implementation 'com.github.luisangeldd:MediaPicker:Tag'
     implementation 'io.insert-koin:koin-android:Tag'
     implementation 'io.insert-koin:koin-androidx-navigation:Tag'
     implementation 'io.insert-koin:koin-androidx-compose:Tag'
@@ -88,7 +88,7 @@ plugins {
 ```groovy
 dependencies {
     ...
-    implementation 'com.github.luisangeldd:MediaPicker:HTag'
+    implementation 'com.github.luisangeldd:MediaPicker:Tag'
     implementation 'androidx.hilt:hilt-navigation-compose:Tag'
     implementation 'com.google.dagger:hilt-android:Tag'
     kapt 'io.insert-koin:koin-androidx-compose:Tag'
