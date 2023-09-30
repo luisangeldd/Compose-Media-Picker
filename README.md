@@ -90,7 +90,7 @@ class App: Application() {
 }
 ```
 - Si usaras Dagger Hilt en tu proyecto para implementar dependencias usa la siguiente estructura
-- ```kotlin
+```kotlin
 @HiltAndroidApp
 class App: Application() {
     override fun onCreate() {
