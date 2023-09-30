@@ -52,13 +52,14 @@ Español
 ## ⬇️ Cómo implemetar
 
 Paso 1. Agregar las dependencias
+- Si usaras Koin en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura a la version se le asigna una H más la version
 
 - Groovy
 
 ```groovy
 dependencies {
     ...
-    implementation 'com.github.luisangeldd:MediaPicker:Tag'
+    implementation 'com.github.luisangeldd:MediaPicker:HTag'
     implementation 'io.insert-koin:koin-android:Tag'
     implementation 'io.insert-koin:koin-androidx-navigation:Tag'
     implementation 'io.insert-koin:koin-androidx-compose:Tag'
