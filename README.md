@@ -229,6 +229,11 @@ class MainActivity : ComponentActivity() {
     }
 }
 ```
+## 🧱 Credits
+[kotlin](https://kotlinlang.org/)
+[MediaStore] (https://developer.android.com/reference/android/provider/MediaStore)
+[Google Fonts:Icons] (https://fonts.google.com/icons)
+
 ## Licencia
 
     Copyright 2023 MediaPicker Contributors
