@@ -41,7 +41,7 @@ Español
 
 - Fácil de usar y amigable.
 
-- Inyeccion de dependencia con Koin o Dagger Hilt, simple y rápido.
+- Inyeccion de dependencias con Koin o Dagger Hilt, simple y rápido.
 
 - Interfaz de usuario de estilo [Material Design 3](https://m3.material.io/).
 
@@ -229,7 +229,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 ```
-## 🧱 Credits
+## 🧱 Creditos
 - [kotlin](https://kotlinlang.org/)
 - [MediaStore](https://developer.android.com/reference/android/provider/MediaStore)
 - [Google Fonts:Icons](https://fonts.google.com/icons)
