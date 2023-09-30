@@ -52,7 +52,7 @@ Español
 ## ⬇️ Cómo implemetar
 
 Paso 1. Agregar las dependencias
-- Si usaras Koin en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura a la version se le asigna una H más la version (H###)
+- Si usaras Koin en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura a la version se le asigna una K más la version (K1.0.0)
 
 - Groovy
 
@@ -74,6 +74,41 @@ dependencies {
     implementation("io.insert-koin:koin-android:Tag")
     implementation("io.insert-koin:koin-androidx-navigation:Tag")
     implementation("io.insert-koin:koin-androidx-compose:Tag")
+}
+```
+- Si usaras  Dagger Hilt en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura a la version se le asigna una H más la version (H1.0.0)
+
+- Groovy
+```groovy
+plugins {
+    id 'com.google.dagger.hilt.android'
+    id 'kotlin-kapt'
+}
+```
+```groovy
+dependencies {
+    ...
+    implementation 'com.github.luisangeldd:MediaPicker:HTag'
+    implementation 'androidx.hilt:hilt-navigation-compose:Tag'
+    implementation 'com.google.dagger:hilt-android:Tag'
+    kapt 'io.insert-koin:koin-androidx-compose:Tag'
+}
+```
+- Kotlin DSL
+```kotlin
+plugins {
+    ...
+    id("com.google.dagger.hilt.android")
+    id("kotlin-kapt")
+}
+```
+```kotlin
+dependencies {
+    ...
+    implementation("com.github.luisangeldd:MediaPicker:Tag")
+    implementation("androidx.hilt:hilt-navigation-compose:Tag")
+    implementation("com.google.dagger:hilt-android:Tag")
+    kapt("com.google.dagger:hilt-compiler:Tag")
 }
 ```
 Paso 2. Crear una clase de aplicación para inyectar los módulos.
