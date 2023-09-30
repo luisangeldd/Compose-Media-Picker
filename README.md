@@ -52,7 +52,7 @@ Español
 ## ⬇️ Cómo implemetar
 
 Paso 1. Agregar las dependencias
-- Si usaras Koin en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura a la version se le asigna una K más la version (K1.0.0)
+- Si usaras Koin en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura, a la version se le asigna una K más la version (K1.0.0)
 
 - Groovy
 
@@ -76,7 +76,7 @@ dependencies {
     implementation("io.insert-koin:koin-androidx-compose:Tag")
 }
 ```
-- Si usaras  Dagger Hilt en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura a la version se le asigna una H más la version (H1.0.0)
+- Si usaras  Dagger Hilt en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura, a la version se le asigna una H más la version (H1.0.0)
 
 - Groovy
 ```groovy
