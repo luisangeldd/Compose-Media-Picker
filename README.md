@@ -93,7 +93,7 @@ dependencies {
     implementation 'com.github.luisangeldd:MediaPicker:Tag'
     implementation 'androidx.hilt:hilt-navigation-compose:Tag'
     implementation 'com.google.dagger:hilt-android:Tag'
-    kapt 'io.insert-koin:koin-androidx-compose:Tag'
+    kapt 'com.google.dagger:hilt-compiler:Tag'
 }
 ```
 - Kotlin DSL
