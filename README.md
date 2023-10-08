@@ -26,9 +26,9 @@ Español
 ## 📱 Videos
 
 <div align="center">
-<div>
-<img width="" src="metadata/video.gif"  width="100%" />
-</div>
+
+https://github.com/luisangeldd/MediaPicker/assets/94653501/6e0f8c60-3114-4800-9f65-567bf58fecc8
+
 </div>
 
 <br>
