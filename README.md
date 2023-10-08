@@ -49,6 +49,13 @@ https://github.com/luisangeldd/MediaPicker/assets/94653501/6e0f8c60-3114-4800-9f
 
 - Inspirado en el [selector de fotos](https://developer.android.com/training/data-storage/shared/photopicker?hl=es-419) de Android.
 
+## 📖 Características Futuras
+
+- Mostrar carpetas del dispostivo y su contenido "Para algunos usuarios puede ser importante el poder acceder a carpetas especificas y buscar un contenido especifico".
+
+- Limitar la cantidad de items que es posible seleccionar "En algunos proyectos puede ser neesario el limitar la cantidad de archivos que es posible seleccionar ya sea por que seran enviados a algun repositorio y el espacio es importante".
+  
+
 ## ⬇️ Cómo implemetar
 
 Paso 1. Agregar las dependencias
