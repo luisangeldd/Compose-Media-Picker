@@ -29,8 +29,9 @@ Español
 <div>
 <img width="" src="metadata/video.gif"  width="100%" />
 </div>
+<div>
 <video src="metadata/video_0.mp4" autoplay  />
-
+</div>
 </div>
 
 <br>
