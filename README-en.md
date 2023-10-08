@@ -156,46 +156,11 @@ Step 3. Configure your manifest file
         android:maxSdkVersion="32" />
     <application
         android:name=".App"
-        android:requestLegacyExternalStorage="true"
-        android:requestRawExternalStorageAccess="true"
         ...
-        <provider
-                android:name="androidx.core.content.FileProvider"
-                android:authorities="${applicationId}.provider"
-                android:exported="false"
-                android:grantUriPermissions="true">
-                <meta-data
-                    android:name="android.support.FILE_PROVIDER_PATHS"
-                    android:resource="@xml/provider_paths" />
-        </provider>
     </application>
 </manifest>
 ```
-Step 4. Create a provider_paths.xml file 
-<br>
-To the file provider_paths.xml that locate in resource/xml of your app and contain the next
-```kotlin
-<?xml version="1.0" encoding="utf-8"?>
-<paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <root-path name="root" path="." />
-    <external-path
-        name="external"
-        path="." />
-    <external-files-path
-        name="external_files"
-        path="/" />
-    <cache-path
-        name="cache"
-        path="." />
-    <external-cache-path
-        name="external_cache"
-        path="." />
-    <files-path
-        name="files"
-        path="." />
-</paths>
-```
-Step 5. Use
+Step 4. Use
 - If you were to use Koin, use the following structure
 ```kotlin
 class MainActivity : ComponentActivity() {
