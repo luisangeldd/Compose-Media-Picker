@@ -1,10 +1,10 @@
-package api.luisangeldd.mediapicker.h.data.repository
+package api.luisangeldd.mediapicker.data.repository.hilt
 
 import android.graphics.Bitmap
 import android.net.Uri
-import api.luisangeldd.mediapicker.h.data.model.Media
+import api.luisangeldd.mediapicker.data.model.Media
 
-interface MediaPickerRepo {
+interface HiltMediaPickerRepo {
     suspend fun fetchMedia( ): List<Media>
     fun fetchThumbnail(uri : Uri, id : Long, mimeType : String): Bitmap
 }

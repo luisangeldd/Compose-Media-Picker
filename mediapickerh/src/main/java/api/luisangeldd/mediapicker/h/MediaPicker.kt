@@ -2,6 +2,7 @@ package api.luisangeldd.mediapicker.h
 
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -33,12 +34,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.BrokenImage
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.PlayCircle
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -51,6 +54,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
@@ -67,6 +71,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -88,6 +93,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import api.luisangeldd.mediapicker.h.data.model.Media
 import api.luisangeldd.mediapicker.h.data.model.MediaUserV0
 import api.luisangeldd.mediapicker.h.utils.IMAGE
+import api.luisangeldd.mediapicker.h.utils.StatePicker
 import api.luisangeldd.mediapicker.h.utils.StateRequest
 import api.luisangeldd.mediapicker.h.utils.StatusRequest
 import api.luisangeldd.mediapicker.h.utils.VIDEO
@@ -121,6 +127,7 @@ fun MediaPicker(
 ){
     val mediaViewModel : MediaViewModel = hiltViewModel()
     val isGranted = mediaViewModel.isGranted
+    val statePicker by mediaViewModel.statePicker.collectAsState()
     val media by mediaViewModel.media.collectAsState()
     val stateRequestMedia by mediaViewModel.stateRequestMedia.collectAsState()
     val statusRequestMedia by mediaViewModel.statusRequestMedia.collectAsState()
@@ -131,7 +138,7 @@ fun MediaPicker(
     val (isSelectedMode, onSelectedMode) = rememberSaveable { mutableStateOf(false) }
     val index: MutableState<Set<Int>> = rememberSaveable { mutableStateOf(emptySet()) }
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
-    var edgeToEdgeEnabled by remember { mutableStateOf(false) }
+    val openAlertDialog = remember { mutableStateOf(false) }
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
@@ -140,7 +147,7 @@ fun MediaPicker(
         onResult = { perms ->
             if (perms[permissionsToRequest[0]] == true && perms[permissionsToRequest[1]] == true) {
                 scope.launch {
-                    openBottomSheet = true
+                    mediaViewModel.statePicker(StatePicker.OPEN)
                 }
                 mediaViewModel.onPermissionResult(
                     isGranted = true
@@ -154,15 +161,10 @@ fun MediaPicker(
     Column (modifier = Modifier.fillMaxWidth() ){
         when (mediaSelected.isNotEmpty()){
             true ->{
-                MediaCarousel(mediaSelected) {
+                MediaCarousel(mediaSelected, thumbnail = { uri,id,mime ->mediaViewModel.getThumbnail(uri,id,mime) }) {
                     scope.launch {
                         index.value -= it
-                        val data = mutableListOf<MediaUserV0>()
-                        index.value.forEach {
-                            data.add(MediaUserV0(item =it,media = media[it]))
-                        }.let {
-                            mediaViewModel.setMedia(data)
-                        }
+                        mediaViewModel.setMedia(index.value.map { MediaUserV0(item = it,media = media[it]) })
                     }
                 }
             }
@@ -174,39 +176,20 @@ fun MediaPicker(
             multiplePermissionResultLauncher.launch(permissionsToRequest)
         }
     }
-    if (openBottomSheet) {
-        val windowInsets = if (edgeToEdgeEnabled)
-            WindowInsets(0) else BottomSheetDefaults.windowInsets
-
+    if (statePicker == StatePicker.OPEN) {
         ModalBottomSheet(
-            onDismissRequest = { openBottomSheet = false },
-            sheetState = bottomSheetState,
-            windowInsets = windowInsets
+            onDismissRequest = {mediaViewModel.statePicker(StatePicker.DRAG) },
+            sheetState = bottomSheetState
         ) {
             Scaffold(
                 topBar = {
                     TopBarMediaViewer(
                         title = "Media",
                         navIcon = {
-                            scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
-                                if (!bottomSheetState.isVisible) {
-                                    openBottomSheet = false
-                                }
-                                if (mediaSelected.isEmpty()){
-                                    index.value = emptySet()
-                                }
-                                else {
-                                    if (mediaSelected.size != index.value.size){
-                                        //index.value = indexAtSelect
-                                    }
-                                }
-                            }
+                            mediaViewModel.statePicker(StatePicker.CLOSE)
                         },
                         action = {
-                            scope.launch {
-                                index.value = emptySet()
-                                mediaViewModel.setMedia(emptyList())
-                            }
+                            openAlertDialog.value = true
                         },
                         isNotEmpty = index.value.isNotEmpty()
                     )
@@ -250,17 +233,7 @@ fun MediaPicker(
                             actions = {
                                 Box(modifier = Modifier.fillMaxWidth(), Alignment.CenterEnd) {
                                     FilledTonalButton(onClick = {
-                                        scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
-                                            if (!bottomSheetState.isVisible) {
-                                                openBottomSheet = false
-                                            }
-                                            val data = mutableListOf<MediaUserV0>()
-                                            index.value.forEach {
-                                                data.add(MediaUserV0(item =it,media = media[it]))
-                                            }.let {
-                                                mediaViewModel.setMedia(data)
-                                            }
-                                        }
+                                        mediaViewModel.statePicker(StatePicker.ADD)
                                     }) {
                                         Text(modifier = Modifier.padding(start = 5.dp),text = "Añadir (${index.value.size})")
                                     }
@@ -273,6 +246,65 @@ fun MediaPicker(
             )
         }
     }
+    if (openAlertDialog.value){
+        AlertDialog(
+            icon = {
+                Icon(Icons.Default.Info, contentDescription = null)
+            },
+            title = {
+                Text(text = "Remover elementos")
+            },
+            text = {
+                Text(text = "Esta funcioón removera todos los elementos seleccionados, incluso los ya seleccionados previamnete estas seguro de continuar ?")
+            },
+            onDismissRequest = {},
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        openAlertDialog.value = false
+                        scope.launch {
+                            index.value = emptySet()
+                            mediaViewModel.setMedia(emptyList())
+                        }
+                    }
+                ) {
+                    Text("Dale pa sin miedo")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        openAlertDialog.value = false
+                    }
+                ) {
+                    Text("Nooo, deja checo xd")
+                }
+            }
+        )
+    }
+    LaunchedEffect(key1 = statePicker, block = {
+        when (statePicker) {
+            StatePicker.OPEN -> {}
+            else -> {
+                scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
+                    if (!bottomSheetState.isVisible) {
+                        openBottomSheet = false
+                    }
+                    when (statePicker) {
+                        StatePicker.DRAG, StatePicker.CLOSE -> {
+                            if (mediaSelected.isEmpty()){
+                                index.value = emptySet()
+                            }
+                        }
+                        StatePicker.ADD -> {
+                            mediaViewModel.setMedia(index.value.map { MediaUserV0(item = it,media = media[it]) })
+                        }
+                        else -> {}
+                    }
+                }
+            }
+        }
+    })
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -302,10 +334,9 @@ private fun TopBarMediaViewer(
         )
     }
 }
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun MediaCarousel(media:List<MediaUserV0>, removeItem: (Int) -> Unit){
+private fun MediaCarousel(media:List<MediaUserV0>,thumbnail: (Uri,Long,String) -> Bitmap, removeItem: (Int) -> Unit){
     val pagerState = rememberPagerState(initialPage = 0, initialPageOffsetFraction = 0f){media.size}
     HorizontalPager(
         contentPadding = PaddingValues(horizontal = 100.dp),
@@ -337,7 +368,7 @@ private fun MediaCarousel(media:List<MediaUserV0>, removeItem: (Int) -> Unit){
         ){
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(media[page].media.uriMedia)
+                    .data(thumbnail(media[page].media.uriMedia,media[page].media.idMedia,media[page].media.mimeType))
                     .crossfade(true)
                     .build(),
                 placeholder = painterResource(R.drawable.image_load),
@@ -399,7 +430,16 @@ private fun GridOfMediaThumbnailLoad(){
                         .padding(3.dp),
                     tonalElevation = 3.dp
                 ) {
-                    Box(modifier = Modifier.shimmerEffect())
+                    Box(
+                        modifier = Modifier
+                            .then(
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    Modifier.blur(25.dp)
+                                } else {
+                                    Modifier.shimmerEffect()
+                                }
+                            )
+                    )
                 }
             }
         }

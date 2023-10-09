@@ -1,25 +1,20 @@
 plugins {
-    id("com.android.application")
+    id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
+    id("maven-publish")
 }
 
 android {
-    namespace = "com.luisangeldd.mediapicker"
+    namespace = "api.luisangeldd.mediapicker"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.luisangeldd.mediapicker"
         minSdk = 21
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
-
+        version = "1.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
@@ -29,7 +24,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -55,26 +49,25 @@ android {
 dependencies {
 
     implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
-    implementation("androidx.activity:activity-compose:1.7.2")
-    implementation("androidx.compose.ui:ui:1.5.2")
-    implementation("androidx.compose.ui:ui-graphics:1.5.2")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.5.2")
-    implementation("androidx.compose.material3:material3-android:1.2.0-alpha08")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.10.0")
+    implementation("androidx.compose.material3:material3-android:1.2.0-alpha09")
+    implementation("androidx.compose.material:material:1.5.3")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.5.2")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.5.2")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.5.2")
-    //koin
-    //implementation("io.insert-koin:koin-android:3.4.2")
-    //implementation("io.insert-koin:koin-androidx-navigation:3.4.2")
-    //implementation("io.insert-koin:koin-androidx-compose:3.4.2")
+    implementation ("androidx.compose.ui:ui-util:1.5.3")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.5.3")
+    // Icons
+    implementation ("androidx.compose.material:material-icons-extended:1.5.3")
+    // coil
+    implementation("io.coil-kt:coil-compose:2.3.0")
+    // Koin
+    implementation("io.insert-koin:koin-android:3.4.2")
+    implementation("io.insert-koin:koin-androidx-navigation:3.4.2")
+    implementation("io.insert-koin:koin-androidx-compose:3.4.2")
     //hilt
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
     implementation("com.google.dagger:hilt-android:2.48")
     kapt("com.google.dagger:hilt-compiler:2.48")
-    //implementation("com.github.luisangeldd:MediaPicker:H1.0.0")
-    implementation(project(":mediapicker"))
 }

@@ -1,4 +1,4 @@
-package api.luisangeldd.mediapicker.h.data.repository
+package api.luisangeldd.mediapicker.data.repository.hilt
 
 import android.annotation.SuppressLint
 import android.content.ContentUris
@@ -13,15 +13,15 @@ import android.provider.MediaStore.Files
 import android.provider.MediaStore.MediaColumns
 import android.util.Size
 import androidx.core.graphics.drawable.toBitmap
-import api.luisangeldd.mediapicker.h.R
-import api.luisangeldd.mediapicker.h.data.model.Media
-import api.luisangeldd.mediapicker.h.utils.IMAGE
-import api.luisangeldd.mediapicker.h.utils.VIDEO
+import api.luisangeldd.mediapicker.R
+import api.luisangeldd.mediapicker.core.IMAGE
+import api.luisangeldd.mediapicker.core.VIDEO
+import api.luisangeldd.mediapicker.data.model.Media
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
-class MediaPickerRepoImpl(private val context: Context) : MediaPickerRepo {
+class HiltMediaPickerRepoImpl(private val context: Context) : HiltMediaPickerRepo {
     override suspend fun fetchMedia(): List<Media> {
         return withContext(Dispatchers.IO) {
             try{

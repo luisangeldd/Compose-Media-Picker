@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import api.luisangeldd.mediapicker.h.data.MediaPickerUseCase
 import api.luisangeldd.mediapicker.h.data.model.Media
 import api.luisangeldd.mediapicker.h.data.model.MediaUserV0
+import api.luisangeldd.mediapicker.h.utils.StatePicker
 import api.luisangeldd.mediapicker.h.utils.StateRequest
 import api.luisangeldd.mediapicker.h.utils.StatusRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +22,8 @@ import javax.inject.Inject
 class MediaViewModel @Inject constructor (private val mediaPickerUseCase: MediaPickerUseCase): ViewModel() {
 
     val isGranted = mutableStateOf(false)
+    private val _statePicker = MutableStateFlow(StatePicker.CLOSE)
+    val statePicker: StateFlow<StatePicker> = _statePicker
 
     private val _stateRequestMedia = MutableStateFlow<StateRequest>(StateRequest.IDLE)
     val stateRequestMedia: StateFlow<StateRequest> = _stateRequestMedia
@@ -48,12 +51,10 @@ class MediaViewModel @Inject constructor (private val mediaPickerUseCase: MediaP
             _media.value = when {
                 data.isEmpty() -> {
                     _statusRequestMedia.value = StatusRequest.EMPTY
-                    Log.d("data","empty")
                     emptyList()
                 }
                 else -> {
                     _statusRequestMedia.value = StatusRequest.NOT_EMPTY
-                    Log.d("data","not_empty")
                     data
                 }
             }
@@ -66,6 +67,11 @@ class MediaViewModel @Inject constructor (private val mediaPickerUseCase: MediaP
     fun setMedia(data: List<MediaUserV0>) {
         viewModelScope.launch {
             _mediaSelected.value = data
+        }
+    }
+    fun statePicker(state: StatePicker) {
+        viewModelScope.launch {
+           _statePicker.value = state
         }
     }
 }

@@ -1,4 +1,4 @@
-package api.luisangeldd.mediapicker.k
+package api.luisangeldd.mediapicker.ui
 
 import android.graphics.Bitmap
 import android.net.Uri
@@ -15,7 +15,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -43,7 +42,6 @@ import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -68,7 +66,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -89,15 +86,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toIntRect
 import androidx.compose.ui.util.lerp
-import api.luisangeldd.mediapicker.k.data.model.Media
-import api.luisangeldd.mediapicker.k.data.model.MediaUserV0
-import api.luisangeldd.mediapicker.k.utils.IMAGE
-import api.luisangeldd.mediapicker.k.utils.StatePicker
-import api.luisangeldd.mediapicker.k.utils.StateRequest
-import api.luisangeldd.mediapicker.k.utils.StatusRequest
-import api.luisangeldd.mediapicker.k.utils.VIDEO
-import api.luisangeldd.mediapicker.k.utils.permissionsToRequest
-import api.luisangeldd.mediapicker.k.utils.shimmerEffect
+import androidx.hilt.navigation.compose.hiltViewModel
+import api.luisangeldd.mediapicker.R
+import api.luisangeldd.mediapicker.core.IMAGE
+import api.luisangeldd.mediapicker.core.StatePicker
+import api.luisangeldd.mediapicker.core.StateRequest
+import api.luisangeldd.mediapicker.core.StatusRequest
+import api.luisangeldd.mediapicker.core.VIDEO
+import api.luisangeldd.mediapicker.core.permissionsToRequest
+import api.luisangeldd.mediapicker.core.shimmerEffect
+import api.luisangeldd.mediapicker.data.model.Media
+import api.luisangeldd.mediapicker.data.model.MediaUser
+import api.luisangeldd.mediapicker.data.model.MediaUserV0
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import kotlinx.coroutines.delay
@@ -106,65 +106,113 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
 import kotlin.math.absoluteValue
 
-/**
- * <a href="https://m3.material.io/components/bottom-sheets/overview" class="external" target="_blank">Media Picker</a>.
- *
- * The media picker is used as an alternative, to the default file manager of the mobile device,
- * it provides the content of the device such as Images and Videos, it recovers the bitmaps of the
- * files and displays them in a LazyGrid allowing them to be selected and displayed the selected
- * content in a Carousel. Like dialog boxes, and modal bottom sheets, the media picker, appears
- * in front of the application content, disables all other functions of the application when it
- * appears and remains on the screen until confirmed, dismissed or a required action is performed.
- *
- * A simple example of a modal bottom sheet looks like this:
- *
- * @param getMedia returns a list of Media type objects which allows recovering the Uri and File of the selected files.
- */
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun MediaPicker(
+    injectionByHilt: Boolean = true,
     getMedia: (List<MediaUser>) -> Unit
 ){
-    val mediaViewModel = getViewModel<MediaViewModel>()
-    val isGranted = mediaViewModel.isGranted
+    if (injectionByHilt) {
+        MediaPickerHilt(mediaViewModel = hiltViewModel<Hilt>(),getMedia =getMedia)
+    } else {
+        MediaPickerKoin(mediaViewModel = getViewModel<Koin>(),getMedia =getMedia)
+    }
+}
+@Composable
+private fun MediaPickerHilt(
+    mediaViewModel: Hilt,
+    getMedia: (List<MediaUser>) -> Unit
+){
     val statePicker by mediaViewModel.statePicker.collectAsState()
     val media by mediaViewModel.media.collectAsState()
     val stateRequestMedia by mediaViewModel.stateRequestMedia.collectAsState()
     val statusRequestMedia by mediaViewModel.statusRequestMedia.collectAsState()
     val mediaSelected by mediaViewModel.mediaSelected.collectAsState()
     val mediaSelectedUser by mediaViewModel.mediaSelectedUser.collectAsState()
+    MediaPickerApp(
+        statePicker = statePicker,
+        media = media,
+        stateRequestMedia = stateRequestMedia,
+        statusRequestMedia = statusRequestMedia,
+        mediaSelected = mediaSelected,
+        mediaSelectedUser = mediaSelectedUser,
+        getThumbnail = { uri,long,mime -> mediaViewModel.getThumbnail(uri,long,mime)},
+        setMedia = { mediaViewModel.setMedia(it)},
+        setStatePicker = { mediaViewModel.statePicker(it)},
+        setMediaCollect = {getMedia(mediaSelectedUser)},
+        getMedia = { mediaViewModel.getMedia() }
+    )
+}
+@Composable
+private fun MediaPickerKoin(
+    mediaViewModel: Koin,
+    getMedia: (List<MediaUser>) -> Unit
+){
+    val statePicker by mediaViewModel.statePicker.collectAsState()
+    val media by mediaViewModel.media.collectAsState()
+    val stateRequestMedia by mediaViewModel.stateRequestMedia.collectAsState()
+    val statusRequestMedia by mediaViewModel.statusRequestMedia.collectAsState()
+    val mediaSelected by mediaViewModel.mediaSelected.collectAsState()
+    val mediaSelectedUser by mediaViewModel.mediaSelectedUser.collectAsState()
+    MediaPickerApp(
+        statePicker = statePicker,
+        media = media,
+        stateRequestMedia = stateRequestMedia,
+        statusRequestMedia = statusRequestMedia,
+        mediaSelected = mediaSelected,
+        mediaSelectedUser = mediaSelectedUser,
+        getThumbnail = { uri,long,mime -> mediaViewModel.getThumbnail(uri,long,mime)},
+        setMedia = { mediaViewModel.setMedia(it)},
+        setStatePicker = { mediaViewModel.statePicker(it)},
+        setMediaCollect = {getMedia(mediaSelectedUser)},
+        getMedia = { mediaViewModel.getMedia() }
+    )
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MediaPickerApp(
+    statePicker: StatePicker,
+    media: List<Media>,
+    stateRequestMedia: StateRequest,
+    statusRequestMedia: StatusRequest,
+    mediaSelected: List<MediaUserV0>,
+    mediaSelectedUser: List<MediaUser>,
+    getThumbnail: (Uri, Long, String) -> Bitmap,
+    setMedia: (List<MediaUserV0>) -> Unit,
+    setStatePicker:(StatePicker ) -> Unit,
+    setMediaCollect: () -> Unit,
+    getMedia: () -> Unit
+){
     val scope = rememberCoroutineScope()
     val state = rememberLazyGridState()
     val (isSelectedMode, onSelectedMode) = rememberSaveable { mutableStateOf(false) }
     val index: MutableState<Set<Int>> = rememberSaveable { mutableStateOf(emptySet()) }
-    var openBottomSheet by rememberSaveable { mutableStateOf(false) }
-    val openAlertDialog = remember { mutableStateOf(false) }
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
     val multiplePermissionResultLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { perms ->
-            if (perms[permissionsToRequest[0]] == true && perms[permissionsToRequest[1]] == true) {
-                scope.launch {
-                    mediaViewModel.statePicker(StatePicker.OPEN)
+            scope.launch {
+                if (perms[permissionsToRequest[0]] == true && perms[permissionsToRequest[1]] == true) {
+                    setStatePicker(StatePicker.OPEN)
                 }
-                mediaViewModel.onPermissionResult(
-                    isGranted = true
-                )
             }
         }
     )
+    val openAlertDialog = remember { mutableStateOf(false) }
+
     LaunchedEffect(key1 = mediaSelectedUser, block = {
-        getMedia(mediaSelectedUser)
+        setMediaCollect()
     })
+
     Column (modifier = Modifier.fillMaxWidth() ){
         when (mediaSelected.isNotEmpty()){
             true ->{
-                MediaCarousel(mediaSelected, thumbnail = { uri,id,mime ->mediaViewModel.getThumbnail(uri,id,mime) }) {
+                MediaCarousel(mediaSelected, thumbnail = { uri,id,mime -> getThumbnail(uri,id,mime) }) {
                     scope.launch {
                         index.value -= it
-                        mediaViewModel.setMedia(index.value.map { MediaUserV0(item = it,media = media[it]) })
+                        setMedia(index.value.map { MediaUserV0(item = it,media = media[it]) })
                     }
                 }
             }
@@ -178,7 +226,7 @@ fun MediaPicker(
     }
     if (statePicker == StatePicker.OPEN) {
         ModalBottomSheet(
-            onDismissRequest = {mediaViewModel.statePicker(StatePicker.DRAG) },
+            onDismissRequest = {setStatePicker(StatePicker.DRAG) },
             sheetState = bottomSheetState
         ) {
             Scaffold(
@@ -186,7 +234,7 @@ fun MediaPicker(
                     TopBarMediaViewer(
                         title = "Media",
                         navIcon = {
-                            mediaViewModel.statePicker(StatePicker.CLOSE)
+                            setStatePicker(StatePicker.CLOSE)
                         },
                         action = {
                             openAlertDialog.value = true
@@ -196,31 +244,29 @@ fun MediaPicker(
                 },
                 content = { paddingInter ->
                     Box(Modifier.padding(paddingInter)){
-                        if (isGranted.value){
-                            when(stateRequestMedia){
-                                StateRequest.IDLE -> {
-                                    if(media.isEmpty()) mediaViewModel.getMedia()
-                                }
-                                StateRequest.START -> {
-                                    GridOfMediaThumbnailLoad()
-                                }
-                                StateRequest.END -> {
-                                    when(statusRequestMedia){
-                                        StatusRequest.IDLE -> {}
-                                        StatusRequest.EMPTY -> {}
-                                        StatusRequest.NOT_EMPTY ->{
-                                            GridOfMediaThumbnail(
-                                                thumbnail = { uri, id, mime ->
-                                                    mediaViewModel.getThumbnail(uri,id,mime)
-                                                },
-                                                media = media,
-                                                onSelectionMode = onSelectedMode,
-                                                itemsSelected = { data -> index.value = data},
-                                                state = state,
-                                                userScrollEnabled = true,
-                                                selectedIds = index
-                                            )
-                                        }
+                        when(stateRequestMedia){
+                            StateRequest.IDLE -> {
+                                if(media.isEmpty()) getMedia()
+                            }
+                            StateRequest.START -> {
+                                GridOfMediaThumbnailLoad()
+                            }
+                            StateRequest.END -> {
+                                when(statusRequestMedia){
+                                    StatusRequest.IDLE -> {}
+                                    StatusRequest.EMPTY -> {}
+                                    StatusRequest.NOT_EMPTY ->{
+                                        GridOfMediaThumbnail(
+                                            thumbnail = { uri, id, mime ->
+                                                getThumbnail(uri,id,mime)
+                                            },
+                                            media = media,
+                                            onSelectionMode = onSelectedMode,
+                                            itemsSelected = { data -> index.value = data},
+                                            state = state,
+                                            userScrollEnabled = true,
+                                            selectedIds = index
+                                        )
                                     }
                                 }
                             }
@@ -233,7 +279,7 @@ fun MediaPicker(
                             actions = {
                                 Box(modifier = Modifier.fillMaxWidth(), Alignment.CenterEnd) {
                                     FilledTonalButton(onClick = {
-                                        mediaViewModel.statePicker(StatePicker.ADD)
+                                        setStatePicker(StatePicker.ADD)
                                     }) {
                                         Text(modifier = Modifier.padding(start = 5.dp),text = "Añadir (${index.value.size})")
                                     }
@@ -264,7 +310,7 @@ fun MediaPicker(
                         openAlertDialog.value = false
                         scope.launch {
                             index.value = emptySet()
-                            mediaViewModel.setMedia(emptyList())
+                            setMedia(emptyList())
                         }
                     }
                 ) {
@@ -287,9 +333,6 @@ fun MediaPicker(
             StatePicker.OPEN -> {}
             else -> {
                 scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
-                    if (!bottomSheetState.isVisible) {
-                        openBottomSheet = false
-                    }
                     when (statePicker) {
                         StatePicker.DRAG, StatePicker.CLOSE -> {
                             if (mediaSelected.isEmpty()){
@@ -297,7 +340,7 @@ fun MediaPicker(
                             }
                         }
                         StatePicker.ADD -> {
-                            mediaViewModel.setMedia(index.value.map { MediaUserV0(item = it,media = media[it]) })
+                            setMedia(index.value.map { MediaUserV0(item = it,media = media[it]) })
                         }
                         else -> {}
                     }

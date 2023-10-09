@@ -40,6 +40,12 @@ enum class StateRequest {
     START,
     END
 }
+enum class StatePicker{
+    CLOSE,
+    OPEN,
+    DRAG,
+    ADD
+}
 const val IMAGE = "image"
 const val VIDEO = "video"
 val permissionsToRequest =

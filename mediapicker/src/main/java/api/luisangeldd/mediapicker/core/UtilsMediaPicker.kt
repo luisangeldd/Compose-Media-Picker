@@ -1,4 +1,4 @@
-package api.luisangeldd.mediapicker.h.utils
+package api.luisangeldd.mediapicker.core
 
 import android.Manifest
 import android.os.Build
@@ -39,9 +39,9 @@ const val IMAGE = "image"
 const val VIDEO = "video"
 val permissionsToRequest =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        arrayOf(Manifest.permission.READ_MEDIA_IMAGES,Manifest.permission.READ_MEDIA_VIDEO)
+        arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
     } else {
-        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE ,Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE , Manifest.permission.WRITE_EXTERNAL_STORAGE)
     }
 /**
  * It is a simple modifier to add the mirror loading property to Box component
