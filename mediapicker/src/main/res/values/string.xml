@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_dialog_clean">Clean select</string>
+    <string name="text_dialog_clean">This function will remove all selected elements, even those already selected. Are you sure to continue?</string>
+    <string name="confirm">Yes</string>
+    <string name="dismiss">No</string>
+</resources>

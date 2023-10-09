@@ -82,6 +82,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toIntRect
@@ -105,7 +107,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
 import kotlin.math.absoluteValue
-
 
 @Composable
 fun MediaPicker(
@@ -298,10 +299,10 @@ private fun MediaPickerApp(
                 Icon(Icons.Default.Info, contentDescription = null)
             },
             title = {
-                Text(text = "Remover elementos")
+                Text(text = stringResource(id = R.string.title_dialog_clean),textAlign = TextAlign.Justify)
             },
             text = {
-                Text(text = "Esta funcioón removera todos los elementos seleccionados, incluso los ya seleccionados previamnete estas seguro de continuar ?")
+                Text(text = stringResource(id = R.string.text_dialog_clean),textAlign = TextAlign.Justify)
             },
             onDismissRequest = {},
             confirmButton = {
@@ -314,7 +315,7 @@ private fun MediaPickerApp(
                         }
                     }
                 ) {
-                    Text("Dale pa sin miedo")
+                    Text(text = stringResource(id = R.string.confirm),textAlign = TextAlign.Justify)
                 }
             },
             dismissButton = {
@@ -323,7 +324,7 @@ private fun MediaPickerApp(
                         openAlertDialog.value = false
                     }
                 ) {
-                    Text("Nooo, deja checo xd")
+                    Text(text = stringResource(id = R.string.dismiss),textAlign = TextAlign.Justify)
                 }
             }
         )
