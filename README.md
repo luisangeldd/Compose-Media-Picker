@@ -60,14 +60,25 @@ https://github.com/luisangeldd/MediaPicker/assets/94653501/6e0f8c60-3114-4800-9f
 
 Paso 1. Agregar las dependencias
 <br>
-Si usaras Koin en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura, a la version se le asigna una K más la version (K1.0.0)
+```groovy
+dependencies {
+    ...
+    implementation 'com.github.luisangeldd:MediaPicker:Tag'
+}
+```
+```kotlin
+dependencies {
+    ...
+    implementation("com.github.luisangeldd:MediaPicker:Tag")
+}
+```
+Si usaras Koin en tu proyecto agrega las siguientes dependencias.
 
 - Groovy
 
 ```groovy
 dependencies {
     ...
-    implementation 'com.github.luisangeldd:MediaPicker:Tag'
     implementation 'io.insert-koin:koin-android:Tag'
     implementation 'io.insert-koin:koin-androidx-navigation:Tag'
     implementation 'io.insert-koin:koin-androidx-compose:Tag'
@@ -78,14 +89,13 @@ dependencies {
 ```kotlin
 dependencies {
     ...
-    implementation("com.github.luisangeldd:MediaPicker:Tag")
     implementation("io.insert-koin:koin-android:Tag")
     implementation("io.insert-koin:koin-androidx-navigation:Tag")
     implementation("io.insert-koin:koin-androidx-compose:Tag")
 }
 ```
 
-Si usaras  Dagger Hilt en tu proyecto para implementar la inyección de dependencias usa la siguiente estructura, a la version se le asigna una H más la version (H1.0.0)
+Si usaras  Dagger Hilt en tu proyecto agrega las siguientes dependencias.
 <br>
 - Groovy
 ```groovy
@@ -97,7 +107,6 @@ plugins {
 ```groovy
 dependencies {
     ...
-    implementation 'com.github.luisangeldd:MediaPicker:Tag'
     implementation 'androidx.hilt:hilt-navigation-compose:Tag'
     implementation 'com.google.dagger:hilt-android:Tag'
     kapt 'com.google.dagger:hilt-compiler:Tag'
@@ -114,7 +123,6 @@ plugins {
 ```kotlin
 dependencies {
     ...
-    implementation("com.github.luisangeldd:MediaPicker:Tag")
     implementation("androidx.hilt:hilt-navigation-compose:Tag")
     implementation("com.google.dagger:hilt-android:Tag")
     kapt("com.google.dagger:hilt-compiler:Tag")
