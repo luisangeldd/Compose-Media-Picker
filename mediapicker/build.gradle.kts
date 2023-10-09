@@ -71,3 +71,16 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.48")
     kapt("com.google.dagger:hilt-compiler:2.48")
 }
+group = "com.github.luisangeldd"
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+                groupId = "com.github.luisangeldd"
+                artifactId = "MediaPicker"
+                version = "1.1.0"
+            }
+        }
+    }
+}
