@@ -187,6 +187,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppNameTheme {
                 MediaPicker(
+                    injectionByHilt = false,
                     getMedia = {}
                 )
             }
@@ -203,6 +204,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppNameTheme {
                 MediaPicker(
+                    injectionByHilt = true,
                     getMedia = {}
                 )
             }
