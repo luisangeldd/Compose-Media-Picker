@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="add">Añadir</string>
     <string name="title_dialog_clean">Limpiar selección</string>
     <string name="text_dialog_clean">Esta función removera todos los elementos seleccionados, incluso los ya seleccionados previamnete ¿Estas seguro de continuar?</string>
     <string name="confirm">Si</string>

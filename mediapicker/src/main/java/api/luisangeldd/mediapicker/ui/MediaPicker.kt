@@ -188,6 +188,7 @@ private fun MediaPickerApp(
     val state = rememberLazyGridState()
     val (isSelectedMode, onSelectedMode) = rememberSaveable { mutableStateOf(false) }
     val index: MutableState<Set<Int>> = rememberSaveable { mutableStateOf(emptySet()) }
+    val indexAux: MutableState<Set<Int>> = rememberSaveable { mutableStateOf(emptySet()) }
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
@@ -282,7 +283,7 @@ private fun MediaPickerApp(
                                     FilledTonalButton(onClick = {
                                         setStatePicker(StatePicker.ADD)
                                     }) {
-                                        Text(modifier = Modifier.padding(start = 5.dp),text = "Añadir (${index.value.size})")
+                                        Text(modifier = Modifier.padding(start = 5.dp),text = stringResource(id = R.string.add) + " (${index.value.size})")
                                     }
                                 }
                             },
@@ -331,13 +332,19 @@ private fun MediaPickerApp(
     }
     LaunchedEffect(key1 = statePicker, block = {
         when (statePicker) {
-            StatePicker.OPEN -> {}
+            StatePicker.OPEN -> {
+                indexAux.value = index.value
+            }
             else -> {
                 scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
                     when (statePicker) {
                         StatePicker.DRAG, StatePicker.CLOSE -> {
                             if (mediaSelected.isEmpty()){
                                 index.value = emptySet()
+                            } else {
+                                if (index.value != indexAux.value){
+                                    index.value = indexAux.value
+                                }
                             }
                         }
                         StatePicker.ADD -> {

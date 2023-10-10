@@ -75,6 +75,6 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
     implementation("com.google.dagger:hilt-android:2.48")
     kapt("com.google.dagger:hilt-compiler:2.48")
-    //implementation("com.github.luisangeldd:MediaPicker:H1.0.0")
+    //implementation("com.github.luisangeldd:MediaPicker:1.1.0")
     implementation(project(":mediapicker"))
 }
