@@ -36,80 +36,95 @@ English
 
 ## 📖 Features
 
-- Fetch videos and pictures/images files from android device.
+- Get the video/image files from your Android device.
 
-- One click to select any media, from your device.
+- One click to select any media on your device.
 
-- Easy to use and user-friendly.
+- Easy to use and friendly.
 
 - Dependency injection with Koin or Dagger Hilt, simple and fast.
 
-- [Material Design 3](https://m3.material.io/) style UI.
+- [Material Design 3](https://m3.material.io/) style user interface.
 
 - Only Compose and Kotlin.
 
-- Inspired by Android [photo picker](https://developer.android.com/training/data-storage/shared/photopicker).
+- Inspired by Android's [photo picker](https://developer.android.com/training/data-storage/shared/photopicker?hl=es-419).
+
+## 📖 Future Features
+
+- Show device folders and their content "For some users it may be important to be able to access specific folders and search for specific content."
+
+- Limit the number of items that can be selected "In some projects it may be necessary to limit the number of files that can be selected, either because they will be sent to a repository and space is important."
 
 ## ⬇️ How to
 
-Step 1. Add the dependency
+Step 1. Add the dependencies
 <br>
-If you would use Koin in your project to implement dependency injection, use the following structure, the version is assigned a K plus the version (K1.0.0)
-- Groovy
+```groovy
+dependencies {
+     ...
+     implementation 'com.github.luisangeldd:MediaPicker:Tag'
+}
+```
+```kotlin
+dependencies {
+     ...
+     implementation("com.github.luisangeldd:MediaPicker:Tag")
+}
+```
+If you were to use Koin in your project, add the following dependencies.
+<br>
+-Groovy
 
 ```groovy
 dependencies {
-    ...
-    implementation 'com.github.luisangeldd:MediaPicker:Tag'
-    implementation 'io.insert-koin:koin-android:Tag'
-    implementation 'io.insert-koin:koin-androidx-navigation:Tag'
-    implementation 'io.insert-koin:koin-androidx-compose:Tag'
+     ...
+     implementation 'io.insert-koin:koin-android:Tag'
+     implementation 'io.insert-koin:koin-androidx-navigation:Tag'
+     implementation 'io.insert-koin:koin-androidx-compose:Tag'
 }
 ```
 - Kotlin DSL
 
 ```kotlin
 dependencies {
-    ...
-    implementation("com.github.luisangeldd:MediaPicker:Tag")
-    implementation("io.insert-koin:koin-android:Tag")
-    implementation("io.insert-koin:koin-androidx-navigation:Tag")
-    implementation("io.insert-koin:koin-androidx-compose:Tag")
+     ...
+     implementation("io.insert-koin:koin-android:Tag")
+     implementation("io.insert-koin:koin-androidx-navigation:Tag")
+     implementation("io.insert-koin:koin-androidx-compose:Tag")
 }
 ```
-If you would use Dagger Hilt in your project to implement dependency injection, use the following structure, the version is assigned an H plus the version (H1.0.0)
+If you were to use Dagger Hilt in your project add the following dependencies.
 <br>
-- Groovy
+-Groovy
 ```groovy
 plugins {
-    id 'com.google.dagger.hilt.android'
-    id 'kotlin-kapt'
+     id 'com.google.dagger.hilt.android'
+     id 'kotlin-kapt'
 }
 ```
 ```groovy
 dependencies {
-    ...
-    implementation 'com.github.luisangeldd:MediaPicker:Tag'
-    implementation 'androidx.hilt:hilt-navigation-compose:Tag'
-    implementation 'com.google.dagger:hilt-android:Tag'
-    kapt 'io.insert-koin:koin-androidx-compose:Tag'
+     ...
+     implementation 'androidx.hilt:hilt-navigation-compose:Tag'
+     implementation 'com.google.dagger:hilt-android:Tag'
+     kapt 'com.google.dagger:hilt-compiler:Tag'
 }
 ```
 - Kotlin DSL
 ```kotlin
 plugins {
-    ...
-    id("com.google.dagger.hilt.android")
-    id("kotlin-kapt")
+     ...
+     id("com.google.dagger.hilt.android")
+     id("kotlin-kapt")
 }
 ```
 ```kotlin
 dependencies {
-    ...
-    implementation("com.github.luisangeldd:MediaPicker:Tag")
-    implementation("androidx.hilt:hilt-navigation-compose:Tag")
-    implementation("com.google.dagger:hilt-android:Tag")
-    kapt("com.google.dagger:hilt-compiler:Tag")
+     ...
+     implementation("androidx.hilt:hilt-navigation-compose:Tag")
+     implementation("com.google.dagger:hilt-android:Tag")
+     kapt("com.google.dagger:hilt-compiler:Tag")
 }
 ```
 Step 2. Create a application class to inject the modules
@@ -160,37 +175,39 @@ Step 3. Configure your manifest file
     </application>
 </manifest>
 ```
-Step 4. Use
+Step 4. Use in your application
+<br>
 - If you were to use Koin, use the following structure
 ```kotlin
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            AppNameTheme {
-                MediaPicker(
-                    getMedia = {}
-                )
-            }
-        }
-    }
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+         setContent {
+             AppNameTheme {
+                 MediaPicker(
+                     injectionByHilt = false,
+                     getMedia = {}
+                 )
+             }
+         }
+     }
 }
-
 ```
 - If you were to use Dagger Hilt use the following structure
 ```kotlin
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            AppNameTheme {
-                MediaPicker(
-                    getMedia = {}
-                )
-            }
-        }
-    }
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+         setContent {
+             AppNameTheme {
+                 MediaPicker(
+                     injectionByHilt = true,
+                     getMedia = {}
+                 )
+             }
+         }
+     }
 }
 ```
 ## 🧱 Credits
