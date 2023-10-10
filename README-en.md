@@ -140,7 +140,7 @@ class App: Application() {
         GlobalContext.startKoin {
             androidLogger()
             androidContext(this@App)
-            modules(appModule)
+            modules(MediaPickerModuleKoin)
         }
     }
 }
