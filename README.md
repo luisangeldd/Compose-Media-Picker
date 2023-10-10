@@ -29,6 +29,10 @@ Español
 
 https://github.com/luisangeldd/MediaPicker/assets/94653501/6e0f8c60-3114-4800-9f65-567bf58fecc8
 
+https://github.com/luisangeldd/MediaPicker/assets/94653501/15910a1f-cecd-486a-9601-b2a7f31670cc
+
+https://github.com/luisangeldd/MediaPicker/assets/94653501/5cf0ab8f-7919-4c4f-ada3-4a6308c1b9bf
+
 </div>
 
 <br>
