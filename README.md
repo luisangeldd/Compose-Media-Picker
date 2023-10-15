@@ -49,7 +49,7 @@ https://github.com/luisangeldd/MediaPicker/assets/94653501/5cf0ab8f-7919-4c4f-ad
 
 - Fácil de usar y amigable.
 
-- Inyeccion de dependencias con Koin o Dagger Hilt, simple y rápido.
+- Inyeccion de dependencias manual, simple y rápido.
 
 - Interfaz de usuario de estilo [Material Design 3](https://m3.material.io/).
 
@@ -80,83 +80,15 @@ dependencies {
     implementation("com.github.luisangeldd:MediaPicker:Tag")
 }
 ```
-Si usaras Koin en tu proyecto agrega las siguientes dependencias.
-
-- Groovy
-
-```groovy
-dependencies {
-    ...
-    implementation 'io.insert-koin:koin-android:Tag'
-    implementation 'io.insert-koin:koin-androidx-navigation:Tag'
-    implementation 'io.insert-koin:koin-androidx-compose:Tag'
-}
-```
-- Kotlin DSL
-
-```kotlin
-dependencies {
-    ...
-    implementation("io.insert-koin:koin-android:Tag")
-    implementation("io.insert-koin:koin-androidx-navigation:Tag")
-    implementation("io.insert-koin:koin-androidx-compose:Tag")
-}
-```
-
-Si usaras  Dagger Hilt en tu proyecto agrega las siguientes dependencias.
-<br>
-- Groovy
-```groovy
-plugins {
-    id 'com.google.dagger.hilt.android'
-    id 'kotlin-kapt'
-}
-```
-```groovy
-dependencies {
-    ...
-    implementation 'androidx.hilt:hilt-navigation-compose:Tag'
-    implementation 'com.google.dagger:hilt-android:Tag'
-    kapt 'com.google.dagger:hilt-compiler:Tag'
-}
-```
-- Kotlin DSL
-```kotlin
-plugins {
-    ...
-    id("com.google.dagger.hilt.android")
-    id("kotlin-kapt")
-}
-```
-```kotlin
-dependencies {
-    ...
-    implementation("androidx.hilt:hilt-navigation-compose:Tag")
-    implementation("com.google.dagger:hilt-android:Tag")
-    kapt("com.google.dagger:hilt-compiler:Tag")
-}
-```
 Paso 2. Crear una clase de aplicación para inyectar los módulos.
-- Si usaras Koin usa la siguiente estructura
 ```kotlin
 class App: Application() {
     override fun onCreate() {
         super.onCreate()
-        GlobalContext.startKoin {
-            androidLogger()
-            androidContext(this@App)
-            modules(MediaPickerModuleKoin)
-        }
+        mediaPickerModule = MediaPickerModuleImpl(this)
     }
-}
-```
-- Si usaras Dagger Hilt usa la siguiente estructura
-```kotlin
-@HiltAndroidApp
-class App: Application() {
-    override fun onCreate() {
-        super.onCreate()
-        
+    companion object{
+        lateinit var mediaPickerModule: MediaPickerModule
     }
 }
 ```
@@ -187,7 +119,6 @@ Paso 3. Configura tu archivo de manifiesto
 
 Paso 4. Usar en tu aplicación
 <br>
-- Si usaras Koin usa la siguiente estructura
 ```kotlin
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -195,25 +126,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppNameTheme {
                 MediaPicker(
-                    injectionByHilt = false,
-                    getMedia = {}
-                )
-            }
-        }
-    }
-}
-```
-- Si usaras Dagger Hilt usa la siguiente estructura
-```kotlin
-@AndroidEntryPoint
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            AppNameTheme {
-                MediaPicker(
-                    injectionByHilt = true,
-                    getMedia = {}
+                     mediaPickerUseCase = App.mediaPickerModule.mediaPickerUseCase,
+                     singleSelection = false, // change the value to single selection
+                     getMedia = {} // collect the list of data file and uri
                 )
             }
         }
@@ -224,6 +139,7 @@ class MainActivity : ComponentActivity() {
 - [kotlin](https://kotlinlang.org/)
 - [MediaStore](https://developer.android.com/reference/android/provider/MediaStore)
 - [Google Fonts:Icons](https://fonts.google.com/icons)
+- [Coil](https://github.com/coil-kt/coil)
 
 ## Licencia
 
