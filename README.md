@@ -4,6 +4,10 @@
 
 ### Obtenga archivos de video/imagen de su dispositivo Android, alternativa al administrador de archivos predeterminado de Android.
 
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/luisangeldd/MediaPicker?color=black&label=Stable&logo=github)](https://github.com/luisangeldd/MediaPicker/releases/latest/)
+[![GitHub Repo stars](https://img.shields.io/github/stars/luisangeldd/MediaPicker?color=informational&label=Stars)](https://github.com/luisangeldd/MediaPicker/stargazers)
+[![GitHub all releases](https://img.shields.io/github/downloads/luisangeldd/MediaPicker/total?label=Downloads&logo=github)](https://github.com/luisangeldd/MediaPicker/releases/)
+
 Español
 &nbsp;&nbsp;| &nbsp;&nbsp;
 <a href="https://github.com/luisangeldd/MediaPicker/blob/main/README-en.md">English</a>
