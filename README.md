@@ -37,6 +37,9 @@ https://github.com/luisangeldd/MediaPicker/assets/94653501/15910a1f-cecd-486a-96
 
 https://github.com/luisangeldd/MediaPicker/assets/94653501/5cf0ab8f-7919-4c4f-ada3-4a6308c1b9bf
 
+https://github.com/luisangeldd/MediaPicker/assets/94653501/e6b1e66a-ff93-46b7-9b53-23805de93885
+
+
 </div>
 
 <br>
