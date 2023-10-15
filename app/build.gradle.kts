@@ -1,8 +1,6 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.dagger.hilt.android")
-    id("kotlin-kapt")
 }
 
 android {
@@ -67,14 +65,7 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.5.2")
     debugImplementation("androidx.compose.ui:ui-tooling:1.5.2")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.5.2")
-    //koin
-    //implementation("io.insert-koin:koin-android:3.4.2")
-    //implementation("io.insert-koin:koin-androidx-navigation:3.4.2")
-    //implementation("io.insert-koin:koin-androidx-compose:3.4.2")
-    //hilt
-    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
-    implementation("com.google.dagger:hilt-android:2.48")
-    kapt("com.google.dagger:hilt-compiler:2.48")
-    //implementation("com.github.luisangeldd:MediaPicker:1.1.0")
+
+    //implementation("com.github.luisangeldd:MediaPicker:1.1.1")
     implementation(project(":mediapicker"))
 }

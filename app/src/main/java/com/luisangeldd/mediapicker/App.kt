@@ -1,18 +1,16 @@
 package com.luisangeldd.mediapicker
 
 import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
-//import api.luisangeldd.mediapicker.k.utils.appModule
+import android.content.Context
+import api.luisangeldd.mediapicker.core.MediaPickerModule
+import api.luisangeldd.mediapicker.core.MediaPickerModuleImpl
 
-
-@HiltAndroidApp
 class App: Application() {
     override fun onCreate() {
         super.onCreate()
-        /*GlobalContext.startKoin {
-            androidLogger()
-            androidContext(this@App)
-            modules(MediaPickerModuleKoin)
-        }*/
+        mediaPickerModule = MediaPickerModuleImpl(this)
+    }
+    companion object{
+        lateinit var mediaPickerModule: MediaPickerModule
     }
 }

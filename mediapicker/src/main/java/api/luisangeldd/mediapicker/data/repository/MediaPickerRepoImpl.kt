@@ -1,4 +1,4 @@
-package api.luisangeldd.mediapicker.data.repository.hilt
+package api.luisangeldd.mediapicker.data.repository
 
 import android.annotation.SuppressLint
 import android.content.ContentUris
@@ -14,14 +14,16 @@ import android.provider.MediaStore.MediaColumns
 import android.util.Size
 import androidx.core.graphics.drawable.toBitmap
 import api.luisangeldd.mediapicker.R
-import api.luisangeldd.mediapicker.core.IMAGE
-import api.luisangeldd.mediapicker.core.VIDEO
+import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.imageExtensionsSupport
+import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.mimeImage
+import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.mimeVideo
+import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.videoExtensionsSupport
 import api.luisangeldd.mediapicker.data.model.Media
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
-class HiltMediaPickerRepoImpl(private val context: Context) : HiltMediaPickerRepo {
+class MediaPickerRepoImpl(private val context: Context) : MediaPickerRepo {
     override suspend fun fetchMedia(): List<Media> {
         return withContext(Dispatchers.IO) {
             try{
@@ -47,9 +49,6 @@ class HiltMediaPickerRepoImpl(private val context: Context) : HiltMediaPickerRep
         private val selectionArgsMediaImage: MutableList<String> = ArrayList()
         private val selectionMediaVideo = StringBuilder("")
         private val selectionArgsMediaVideo: MutableList<String> = ArrayList()
-        private val imageExtensions = arrayOf("$IMAGE/jpg", "$IMAGE/jpeg", "$IMAGE/png", "$IMAGE/gif", "$IMAGE/bmp", "$IMAGE/webp")
-        private val videoExtensions = arrayOf("$VIDEO/mp4", "$VIDEO/mkv", "$VIDEO/avi", "$VIDEO/wmv", "$VIDEO/mov", "$VIDEO/webm")
-        private val fileExtensions = imageExtensions.plus(videoExtensions)
         private val projection = arrayOf(
             Files.FileColumns._ID,
             Files.FileColumns.DATA,
@@ -105,10 +104,10 @@ class HiltMediaPickerRepoImpl(private val context: Context) : HiltMediaPickerRep
                 context.contentResolver.loadThumbnail(uri, Size(640, 480), null)
             } else {
                 val bmp = when (mimeType.split('/')[0]){
-                    IMAGE -> {
+                    mimeImage -> {
                         Images.Thumbnails.getThumbnail(context.contentResolver, id, Images.Thumbnails.MINI_KIND, null)
                     }
-                    VIDEO -> {
+                    mimeVideo -> {
                         Video.Thumbnails.getThumbnail(context.contentResolver, id, Images.Thumbnails.MINI_KIND, null)
                     }
                     else -> {
@@ -119,21 +118,21 @@ class HiltMediaPickerRepoImpl(private val context: Context) : HiltMediaPickerRep
             }
         }
         private fun selectionMediaImage() {
-            if (imageExtensions.isNotEmpty()) {
+            if (imageExtensionsSupport.isNotEmpty()) {
                 selectionMediaImage.append(Images.Media.MIME_TYPE + " IN (")
-                for (i in imageExtensions.indices) {
+                for (i in imageExtensionsSupport.indices) {
                     selectionMediaImage.append("?,")
-                    selectionArgsMediaImage.add(imageExtensions[i])
+                    selectionArgsMediaImage.add(mimeImage+"/"+imageExtensionsSupport[i])
                 }
                 selectionMediaImage.replace(selectionMediaImage.length - 1, selectionMediaImage.length, ")")
             }
         }
         private fun selectionMediaVideo() {
-            if (videoExtensions.isNotEmpty()) {
+            if (videoExtensionsSupport.isNotEmpty()) {
                 selectionMediaVideo.append(Video.Media.MIME_TYPE + " IN (")
-                for (i in videoExtensions.indices) {
+                for (i in videoExtensionsSupport.indices) {
                     selectionMediaVideo.append("?,")
-                    selectionArgsMediaVideo.add(videoExtensions[i])
+                    selectionArgsMediaVideo.add(mimeVideo+"/"+videoExtensionsSupport[i])
                 }
                 selectionMediaVideo.replace(selectionMediaVideo.length - 1, selectionMediaVideo.length, ")")
             }

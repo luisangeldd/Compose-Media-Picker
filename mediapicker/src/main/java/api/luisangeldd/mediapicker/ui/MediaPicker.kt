@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -30,7 +32,6 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
@@ -69,7 +70,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -83,95 +83,74 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toIntRect
 import androidx.compose.ui.util.lerp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import api.luisangeldd.mediapicker.R
-import api.luisangeldd.mediapicker.core.IMAGE
+import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.mimeImage
+import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.mimeVideo
+import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.permissionsToRequest
 import api.luisangeldd.mediapicker.core.StatePicker
 import api.luisangeldd.mediapicker.core.StateRequest
 import api.luisangeldd.mediapicker.core.StatusRequest
-import api.luisangeldd.mediapicker.core.VIDEO
-import api.luisangeldd.mediapicker.core.permissionsToRequest
-import api.luisangeldd.mediapicker.core.shimmerEffect
+import api.luisangeldd.mediapicker.core.viewModelFactory
+import api.luisangeldd.mediapicker.data.MediaPickerUseCase
 import api.luisangeldd.mediapicker.data.model.Media
 import api.luisangeldd.mediapicker.data.model.MediaUser
 import api.luisangeldd.mediapicker.data.model.MediaUserV0
-import coil.compose.AsyncImage
+import coil.ImageLoader
+import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.getViewModel
 import kotlin.math.absoluteValue
 
 @Composable
 fun MediaPicker(
-    injectionByHilt: Boolean = true,
+    mediaPickerUseCase: MediaPickerUseCase,
+    singleSelection: Boolean = false,
     getMedia: (List<MediaUser>) -> Unit
 ){
-    if (injectionByHilt) {
-        MediaPickerHilt(mediaViewModel = hiltViewModel<Hilt>(),getMedia =getMedia)
-    } else {
-        MediaPickerKoin(mediaViewModel = getViewModel<Koin>(),getMedia =getMedia)
-    }
-}
-@Composable
-private fun MediaPickerHilt(
-    mediaViewModel: Hilt,
-    getMedia: (List<MediaUser>) -> Unit
-){
-    val statePicker by mediaViewModel.statePicker.collectAsState()
-    val media by mediaViewModel.media.collectAsState()
-    val stateRequestMedia by mediaViewModel.stateRequestMedia.collectAsState()
-    val statusRequestMedia by mediaViewModel.statusRequestMedia.collectAsState()
-    val mediaSelected by mediaViewModel.mediaSelected.collectAsState()
-    val mediaSelectedUser by mediaViewModel.mediaSelectedUser.collectAsState()
+    val viewModelMediaPicker = viewModel<ViewModelMediaPicker>(
+        factory = viewModelFactory {
+            ViewModelMediaPicker(mediaPickerUseCase = mediaPickerUseCase)
+        }
+    )
+    val statePicker by viewModelMediaPicker.statePicker.collectAsState()
+    val media by viewModelMediaPicker.media.collectAsState()
+    val stateRequestMedia by viewModelMediaPicker.stateRequestMedia.collectAsState()
+    val statusRequestMedia by viewModelMediaPicker.statusRequestMedia.collectAsState()
+    val mediaSelected by viewModelMediaPicker.mediaSelected.collectAsState()
+    val mediaSelectedUser by viewModelMediaPicker.mediaSelectedUser.collectAsState()
     MediaPickerApp(
+        singleSelection = singleSelection,
         statePicker = statePicker,
         media = media,
         stateRequestMedia = stateRequestMedia,
         statusRequestMedia = statusRequestMedia,
         mediaSelected = mediaSelected,
         mediaSelectedUser = mediaSelectedUser,
-        getThumbnail = { uri,long,mime -> mediaViewModel.getThumbnail(uri,long,mime)},
-        setMedia = { mediaViewModel.setMedia(it)},
-        setStatePicker = { mediaViewModel.statePicker(it)},
-        setMediaCollect = {getMedia(mediaSelectedUser)},
-        getMedia = { mediaViewModel.getMedia() }
+        getThumbnail = { uri,long,mime -> viewModelMediaPicker.getThumbnail(uri,long,mime)},
+        setMedia = { viewModelMediaPicker.setMedia(it)},
+        setStatePicker = { viewModelMediaPicker.statePicker(it)},
+        setMediaCollect = { getMedia(mediaSelectedUser) },
+        getMedia = { viewModelMediaPicker.getMedia() }
     )
 }
-@Composable
-private fun MediaPickerKoin(
-    mediaViewModel: Koin,
-    getMedia: (List<MediaUser>) -> Unit
-){
-    val statePicker by mediaViewModel.statePicker.collectAsState()
-    val media by mediaViewModel.media.collectAsState()
-    val stateRequestMedia by mediaViewModel.stateRequestMedia.collectAsState()
-    val statusRequestMedia by mediaViewModel.statusRequestMedia.collectAsState()
-    val mediaSelected by mediaViewModel.mediaSelected.collectAsState()
-    val mediaSelectedUser by mediaViewModel.mediaSelectedUser.collectAsState()
-    MediaPickerApp(
-        statePicker = statePicker,
-        media = media,
-        stateRequestMedia = stateRequestMedia,
-        statusRequestMedia = statusRequestMedia,
-        mediaSelected = mediaSelected,
-        mediaSelectedUser = mediaSelectedUser,
-        getThumbnail = { uri,long,mime -> mediaViewModel.getThumbnail(uri,long,mime)},
-        setMedia = { mediaViewModel.setMedia(it)},
-        setStatePicker = { mediaViewModel.statePicker(it)},
-        setMediaCollect = {getMedia(mediaSelectedUser)},
-        getMedia = { mediaViewModel.getMedia() }
-    )
-}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MediaPickerApp(
+    singleSelection: Boolean,
     statePicker: StatePicker,
     media: List<Media>,
     stateRequestMedia: StateRequest,
@@ -180,7 +159,7 @@ private fun MediaPickerApp(
     mediaSelectedUser: List<MediaUser>,
     getThumbnail: (Uri, Long, String) -> Bitmap,
     setMedia: (List<MediaUserV0>) -> Unit,
-    setStatePicker:(StatePicker ) -> Unit,
+    setStatePicker:(StatePicker) -> Unit,
     setMediaCollect: () -> Unit,
     getMedia: () -> Unit
 ){
@@ -203,14 +182,12 @@ private fun MediaPickerApp(
         }
     )
     val openAlertDialog = remember { mutableStateOf(false) }
-
     LaunchedEffect(key1 = mediaSelectedUser, block = {
         setMediaCollect()
     })
-
     Column (modifier = Modifier.fillMaxWidth() ){
-        when (mediaSelected.isNotEmpty()){
-            true ->{
+        if (!singleSelection) {
+            if (mediaSelected.isNotEmpty()){
                 MediaCarousel(mediaSelected, thumbnail = { uri,id,mime -> getThumbnail(uri,id,mime) }) {
                     scope.launch {
                         index.value -= it
@@ -218,10 +195,8 @@ private fun MediaPickerApp(
                     }
                 }
             }
-            false ->{
-
-            }
         }
+
         LaunchButton {
             multiplePermissionResultLauncher.launch(permissionsToRequest)
         }
@@ -259,6 +234,7 @@ private fun MediaPickerApp(
                                     StatusRequest.EMPTY -> {}
                                     StatusRequest.NOT_EMPTY ->{
                                         GridOfMediaThumbnail(
+                                            singleSelection = singleSelection,
                                             thumbnail = { uri, id, mime ->
                                                 getThumbnail(uri,id,mime)
                                             },
@@ -283,7 +259,7 @@ private fun MediaPickerApp(
                                     FilledTonalButton(onClick = {
                                         setStatePicker(StatePicker.ADD)
                                     }) {
-                                        Text(modifier = Modifier.padding(start = 5.dp),text = stringResource(id = R.string.add) + " (${index.value.size})")
+                                        Text(modifier = Modifier.padding(start = 5.dp),text = stringResource(id = R.string.add) + if (singleSelection) "" else " (${index.value.size})", textAlign = TextAlign.Justify)
                                     }
                                 }
                             },
@@ -332,24 +308,18 @@ private fun MediaPickerApp(
     }
     LaunchedEffect(key1 = statePicker, block = {
         when (statePicker) {
-            StatePicker.OPEN -> {
-                indexAux.value = index.value
-            }
+            StatePicker.OPEN -> indexAux.value = index.value
             else -> {
                 scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
                     when (statePicker) {
-                        StatePicker.DRAG, StatePicker.CLOSE -> {
-                            if (mediaSelected.isEmpty()){
-                                index.value = emptySet()
-                            } else {
-                                if (index.value != indexAux.value){
-                                    index.value = indexAux.value
-                                }
+                        StatePicker.DRAG, StatePicker.CLOSE -> if (mediaSelected.isEmpty()) {
+                            index.value = emptySet()
+                        } else {
+                            if (index.value != indexAux.value){
+                                index.value = indexAux.value
                             }
                         }
-                        StatePicker.ADD -> {
-                            setMedia(index.value.map { MediaUserV0(item = it,media = media[it]) })
-                        }
+                        StatePicker.ADD -> setMedia(index.value.map { MediaUserV0(item = it,media = media[it]) })
                         else -> {}
                     }
                 }
@@ -390,6 +360,7 @@ private fun TopBarMediaViewer(
 @Composable
 private fun MediaCarousel(media:List<MediaUserV0>,thumbnail: (Uri,Long,String) -> Bitmap, removeItem: (Int) -> Unit){
     val pagerState = rememberPagerState(initialPage = 0, initialPageOffsetFraction = 0f){media.size}
+    val context =  LocalContext.current
     HorizontalPager(
         contentPadding = PaddingValues(horizontal = 100.dp),
         state = pagerState,
@@ -418,15 +389,21 @@ private fun MediaCarousel(media:List<MediaUserV0>,thumbnail: (Uri,Long,String) -
                 },
             contentAlignment = Alignment.Center
         ){
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
+            Image(
+                painter = rememberAsyncImagePainter(
+                model = ImageRequest.Builder(context)
                     .data(thumbnail(media[page].media.uriMedia,media[page].media.idMedia,media[page].media.mimeType))
-                    .crossfade(true)
+                    .crossfade(1000)
                     .build(),
-                placeholder = painterResource(R.drawable.image_load),
+                imageLoader = ImageLoader(context),
+                placeholder = painterResource(id = R.drawable.image_load),
+            )
+                ,
                 contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.size(200.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .matchParentSize(),
+                contentScale = ContentScale.Crop
             )
             Box (modifier = Modifier.size(200.dp), contentAlignment = Alignment.TopEnd){
                 FilledTonalIconButton(
@@ -485,10 +462,10 @@ private fun GridOfMediaThumbnailLoad(){
                     Box(
                         modifier = Modifier
                             .then(
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                                     Modifier.blur(25.dp)
                                 } else {
-                                    Modifier.shimmerEffect()
+                                    Modifier
                                 }
                             )
                     )
@@ -499,6 +476,7 @@ private fun GridOfMediaThumbnailLoad(){
 }
 @Composable
 private fun GridOfMediaThumbnail(
+    singleSelection: Boolean,
     thumbnail: (Uri, Long, String) -> Bitmap,
     media:List<Media>,
     onSelectionMode: (Boolean) -> Unit,
@@ -507,6 +485,7 @@ private fun GridOfMediaThumbnail(
     userScrollEnabled: Boolean,
     selectedIds: MutableState<Set<Int>> = rememberSaveable { mutableStateOf(emptySet()) }
 ){
+    val (prevItem,onPrevItem) = remember { mutableStateOf<Int?>(null) }
     val inSelectionMode by remember { derivedStateOf { selectedIds.value.isNotEmpty() } }
     val autoScrollSpeed = remember { mutableFloatStateOf(0f) }
     val (isDrag,onDrag) = rememberSaveable { mutableStateOf(false) }
@@ -523,6 +502,7 @@ private fun GridOfMediaThumbnail(
     LazyVerticalGrid(
         columns = GridCells.Fixed( 3 ),
         modifier = Modifier.photoGridDragHandler(
+            singleSelection = singleSelection,
             lazyGridState = state,
             haptics = LocalHapticFeedback.current,
             selectedIds = selectedIds,
@@ -534,18 +514,56 @@ private fun GridOfMediaThumbnail(
         contentPadding = PaddingValues(horizontal = 3.dp),
         userScrollEnabled = userScrollEnabled,
         content = {
+            /*items(media,key = {it.idMedia}){ item->
+
+            }*/
             items(media.size, key = { it }){item ->
                 val selected by remember { derivedStateOf { selectedIds.value.contains(item) } }
                 MediaItem(
+                    itemPosition = if (selected) selectedIds.value.indexOf(item) + 1 else null,
+                    singleSelection = singleSelection,
                     thumbnail = { thumbnail(media[item].uriMedia,media[item].idMedia,media[item].mimeType) },
                     inSelectionMode,
                     selected,
                     media[item].mimeType.split('/')[0],
                     Modifier
                         .then(
-                            if (inSelectionMode) {
-                                if (isDrag) {
-                                    Modifier
+                            if (singleSelection){
+                                Modifier.toggleable(
+                                    value = selected,
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null, // do not show a ripple
+                                    onValueChange = {
+                                        if (it) {
+                                            selectedIds.value += item
+                                            if (prevItem != null) {
+                                                selectedIds.value = selectedIds.value.minus(prevItem)
+                                            }
+                                            onPrevItem(item)
+                                        } else {
+                                            selectedIds.value -= item
+                                            if (prevItem != null) onPrevItem(null)
+                                        }
+                                    }
+                                )
+                            } else {
+                                if (inSelectionMode) {
+                                    if (isDrag) {
+                                        Modifier
+                                    } else {
+                                        Modifier.toggleable(
+                                            value = selected,
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null, // do not show a ripple
+                                            onValueChange = {
+                                                if (it) {
+                                                    selectedIds.value += item
+                                                } else {
+                                                    selectedIds.value -= item
+                                                }
+                                            }
+                                        )
+                                    }
                                 } else {
                                     Modifier.toggleable(
                                         value = selected,
@@ -560,19 +578,6 @@ private fun GridOfMediaThumbnail(
                                         }
                                     )
                                 }
-                            } else {
-                                Modifier.toggleable(
-                                    value = selected,
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null, // do not show a ripple
-                                    onValueChange = {
-                                        if (it) {
-                                            selectedIds.value += item
-                                        } else {
-                                            selectedIds.value -= item
-                                        }
-                                    }
-                                )
                             }
                         )
                 )
@@ -582,18 +587,24 @@ private fun GridOfMediaThumbnail(
 }
 @Composable
 private fun MediaItem(
+    itemPosition: Int?,
+    singleSelection: Boolean,
     thumbnail: () -> Bitmap,
     inSelectionMode: Boolean,
     selected: Boolean,
     mime: String,
     modifier: Modifier = Modifier
 ) {
+    val bdColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
+    val bgColor = MaterialTheme.colorScheme.primary
+
     Surface(
         modifier = modifier
             .aspectRatio(1f)
             .padding(3.dp),
         tonalElevation = 3.dp
     ) {
+
         Box (contentAlignment = Alignment.Center) {
             Image(
                 bitmap = thumbnail().asImageBitmap(),
@@ -603,41 +614,41 @@ private fun MediaItem(
                     .matchParentSize(),
                 contentScale = ContentScale.Crop
             )
-            if (inSelectionMode) {
-                Box(modifier = Modifier.fillMaxSize(),contentAlignment = Alignment.TopEnd) {
+            Box(modifier = Modifier.fillMaxSize(),contentAlignment = Alignment.TopEnd) {
+                if (singleSelection){
                     if (selected) {
-                        val bgColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
                         Box(
                             Modifier
                                 .fillMaxSize()
                                 .background(Color.Black.copy(0.2f)))
-                        Icon(
-                            Icons.Filled.CheckCircle,
-                            tint = MaterialTheme.colorScheme.primary,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .padding(4.dp)
-                                .border(2.dp, bgColor, CircleShape)
-                                .clip(CircleShape)
-                                .background(bgColor)
-                        )
-                    } else {
-                        Icon(
-                            Icons.Filled.RadioButtonUnchecked,
-                            tint = Color.White.copy(alpha = 0.7f),
-                            contentDescription = null,
-                            modifier = Modifier.padding(6.dp)
-                        )
+                        MyCenterTextInCanvas("$itemPosition",bdColor,bgColor)
+                    }
+                } else {
+                    if (inSelectionMode) {
+                        if (selected) {
+                            Box(
+                                Modifier
+                                    .fillMaxSize()
+                                    .background(Color.Black.copy(0.2f))
+                            )
+                            MyCenterTextInCanvas("$itemPosition",bdColor,bgColor)
+                        } else {
+                            Icon(
+                                Icons.Filled.RadioButtonUnchecked,
+                                tint = Color.White.copy(alpha = 0.7f),
+                                contentDescription = null
+                            )
+                        }
                     }
                 }
             }
             Icon(
                 modifier = Modifier.size(48.dp),
                 imageVector = when (mime){
-                    IMAGE -> {
+                    mimeImage -> {
                         Icons.Rounded.Image
                     }
-                    VIDEO -> {
+                    mimeVideo -> {
                         Icons.Rounded.PlayCircle
                     }
                     else -> {
@@ -650,6 +661,7 @@ private fun MediaItem(
     }
 }
 private fun Modifier.photoGridDragHandler(
+    singleSelection: Boolean,
     lazyGridState: LazyGridState,
     haptics: HapticFeedback,
     selectedIds: MutableState<Set<Int>>,
@@ -668,11 +680,13 @@ private fun Modifier.photoGridDragHandler(
         onDragStart = { offset ->
             onDragStartListen(true)
             lazyGridState.gridItemKeyAtPosition(offset)?.let { key ->
-                if (!selectedIds.value.contains(key)) {
-                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                    initialKey = key
-                    currentKey = key
-                    selectedIds.value += key
+                if (!singleSelection){
+                    if (!selectedIds.value.contains(key)) {
+                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        initialKey = key
+                        currentKey = key
+                        selectedIds.value += key
+                    }
                 }
             }
         },
@@ -702,4 +716,29 @@ private fun Modifier.photoGridDragHandler(
             }
         }
     )
+}
+@Composable
+private fun MyCenterTextInCanvas(item:String,bdColor:Color,bgColor:Color) {
+    val textMeasurer = rememberTextMeasurer()
+    val textLayoutResult: TextLayoutResult = textMeasurer.measure(text = AnnotatedString(item))
+    val textSize = textLayoutResult.size
+    Canvas(
+        modifier = Modifier
+            .border(2.dp, bdColor, CircleShape)
+            .requiredSize(24.dp),
+    ) {
+
+        val canvasWidth = size.width
+        val canvasHeight = size.height
+        drawCircle(color = bgColor)
+        drawText(
+            textMeasurer = textMeasurer,
+            text = item,
+            style = TextStyle(color = bdColor),
+            topLeft = Offset(
+                (canvasWidth - textSize.width) / 2f,
+                (canvasHeight - textSize.height) / 2f
+            ),
+        )
+    }
 }
