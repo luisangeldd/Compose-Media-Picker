@@ -85,19 +85,7 @@ dependencies {
     implementation("com.github.luisangeldd:MediaPicker:Tag")
 }
 ```
-Paso 2. Crear una clase de aplicación para inyectar los módulos.
-```kotlin
-class App: Application() {
-    override fun onCreate() {
-        super.onCreate()
-        mediaPickerModule = MediaPickerModuleImpl(this)
-    }
-    companion object{
-        lateinit var mediaPickerModule: MediaPickerModule
-    }
-}
-```
-Paso 3. Configura tu archivo de manifiesto
+Paso 2. Configura tu archivo de manifiesto
 ```kotlin
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -121,8 +109,7 @@ Paso 3. Configura tu archivo de manifiesto
     </application>
 </manifest>
 ```
-
-Paso 4. Usar en tu aplicación
+Paso 3. Usar en tu aplicación
 <br>
 ```kotlin
 class MainActivity : ComponentActivity() {
@@ -131,9 +118,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppNameTheme {
                 MediaPicker(
-                     mediaPickerUseCase = App.mediaPickerModule.mediaPickerUseCase,
-                     singleSelection = false, // change the value to single selection
-                     getMedia = {} // collect the list of data file and uri
+                     actionStart = {
+                          action = it // Action function triggers by recovering the action of opening the content.
+                     },
+                     multiMedia = true, // change the value to single selection
+                     getMedia = {} // retrieves a list of Mediauser objects which contains the Uri and File of the selected files
                 )
             }
         }
