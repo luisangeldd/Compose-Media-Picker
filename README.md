@@ -141,13 +141,22 @@ class MainActivity : ComponentActivity() {
                 }
             )
             AppNameTheme {
-                MediaPicker(
-                     actionStart = {
-                          action = it // Action function triggers by recovering the action of opening the content.
-                     },
-                     multiMedia = true, // change the value to single selection
-                     getMedia = {} // retrieves a list of Mediauser objects which contains the Uri and File of the selected files
-                )
+                Column{
+                     MediaPicker(
+                           actionStart = {
+                                action = it // Action function triggers by recovering the action of opening the content.
+                           },
+                           multiMedia = true, // change the value to single selection
+                           getMedia = {} // retrieves a list of Mediauser objects which contains the Uri and File of the selected files
+                     )
+                     Button(
+                            onClick  = {
+                                   scope.launch{multiplePermissionResultLauncher.launch(permissionsToRequest)}
+                            }
+                     ){
+                         Icon(imageVector = Icons.Rounded.Add, contenteDescription = null)
+                     }
+                }
             }
         }
     }
