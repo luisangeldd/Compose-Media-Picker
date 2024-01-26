@@ -1,10 +1,9 @@
 package api.luisangeldd.mediapicker.ui
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -30,13 +29,11 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.BrokenImage
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Image
@@ -48,6 +45,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -94,15 +92,13 @@ import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toIntRect
 import androidx.compose.ui.util.lerp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import api.luisangeldd.mediapicker.R
-import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.mimeImage
-import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.mimeVideo
-import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.permissionsToRequest
+import api.luisangeldd.mediapicker.core.ConstantsMediaPicker
 import api.luisangeldd.mediapicker.core.StatePicker
 import api.luisangeldd.mediapicker.core.StateRequest
 import api.luisangeldd.mediapicker.core.StatusRequest
-import api.luisangeldd.mediapicker.core.viewModelFactory
-import api.luisangeldd.mediapicker.data.MediaPickerUseCase
 import api.luisangeldd.mediapicker.data.model.Media
 import api.luisangeldd.mediapicker.data.model.MediaUser
 import api.luisangeldd.mediapicker.data.model.MediaUserV0
@@ -114,25 +110,49 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
+/**
+ *[Media Picker](https://github.com/luisangeldd/MediaPicker).
+ *
+ * Media picker is a powerful api for Jetpack Compose with Kotlin to get media content from any device.
+ *
+ * The media picker is used as an alternative to the default file manager of the mobile device, this API is inspired by the
+ * [Photo picker](https://developer.android.com/training/data-storage/shared/photopicker?hl=es-419) API, it provides the device
+ * content such as images and videos, retrieves the file bitmaps and the displays in a LazyGrid that allows you to select them
+ * and display the selected content in a Carousel, in addition to remembering the selected elements to select new ones or remove
+ * previously selected elements. Like dialog boxes and modal bottom sheets, the media switcher appears in front of the application
+ * content, disables all other functions of the application when it appears, and remains on the screen until it is confirmed,
+ * dismissed, or executed. a required action.
+ *
+ * A simple example of a media picker looks like this:
+ *
+ * @param actionStart returns the trigger action to trigger the window which is activated when storage permissions have been granted.
+ * @param multiMedia set if use to select a single o multi media items, true for multi medias and false for single selection.
+ * @param getMedia returns a list of Media type objects which allows recovering the Uri and File of the selected files.
+ */
 @Composable
 fun MediaPicker(
-    mediaPickerUseCase: MediaPickerUseCase,
-    singleSelection: Boolean = false,
+    actionStart: (() -> Unit) -> Unit,
+    multiMedia: Boolean = true,
     getMedia: (List<MediaUser>) -> Unit
 ){
+    val context = LocalContext.current
     val viewModelMediaPicker = viewModel<ViewModelMediaPicker>(
         factory = viewModelFactory {
-            ViewModelMediaPicker(mediaPickerUseCase = mediaPickerUseCase)
+            initializer {
+                ViewModelMediaPicker(context = context)
+            }
         }
     )
+    actionStart { viewModelMediaPicker.statePicker(StatePicker.OPEN) }
     val statePicker by viewModelMediaPicker.statePicker.collectAsState()
     val media by viewModelMediaPicker.media.collectAsState()
     val stateRequestMedia by viewModelMediaPicker.stateRequestMedia.collectAsState()
     val statusRequestMedia by viewModelMediaPicker.statusRequestMedia.collectAsState()
     val mediaSelected by viewModelMediaPicker.mediaSelected.collectAsState()
     val mediaSelectedUser by viewModelMediaPicker.mediaSelectedUser.collectAsState()
-    MediaPickerApp(
-        singleSelection = singleSelection,
+
+    MediaPickerStart(
+        multiMedia = multiMedia,
         statePicker = statePicker,
         media = media,
         stateRequestMedia = stateRequestMedia,
@@ -146,11 +166,10 @@ fun MediaPicker(
         getMedia = { viewModelMediaPicker.getMedia() }
     )
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MediaPickerApp(
-    singleSelection: Boolean,
+internal fun MediaPickerStart(
+    multiMedia: Boolean,
     statePicker: StatePicker,
     media: List<Media>,
     stateRequestMedia: StateRequest,
@@ -171,34 +190,18 @@ private fun MediaPickerApp(
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
-    val multiplePermissionResultLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions(),
-        onResult = { perms ->
-            scope.launch {
-                if (perms[permissionsToRequest[0]] == true && perms[permissionsToRequest[1]] == true) {
-                    setStatePicker(StatePicker.OPEN)
-                }
-            }
-        }
-    )
     val openAlertDialog = remember { mutableStateOf(false) }
     LaunchedEffect(key1 = mediaSelectedUser, block = {
         setMediaCollect()
     })
-    Column (modifier = Modifier.fillMaxWidth() ){
-        if (!singleSelection) {
-            if (mediaSelected.isNotEmpty()){
-                MediaCarousel(mediaSelected, thumbnail = { uri,id,mime -> getThumbnail(uri,id,mime) }) {
-                    scope.launch {
-                        index.value -= it
-                        setMedia(index.value.map { MediaUserV0(item = it,media = media[it]) })
-                    }
+    if (multiMedia) {
+        if (mediaSelected.isNotEmpty()){
+            MediaCarousel(mediaSelected, thumbnail = { uri,id,mime -> getThumbnail(uri,id,mime) }) {
+                scope.launch {
+                    index.value -= it
+                    setMedia(index.value.map { MediaUserV0(item = it,media = media[it]) })
                 }
             }
-        }
-
-        LaunchButton {
-            multiplePermissionResultLauncher.launch(permissionsToRequest)
         }
     }
     if (statePicker == StatePicker.OPEN) {
@@ -234,7 +237,7 @@ private fun MediaPickerApp(
                                     StatusRequest.EMPTY -> {}
                                     StatusRequest.NOT_EMPTY ->{
                                         GridOfMediaThumbnail(
-                                            singleSelection = singleSelection,
+                                            multiMedia = multiMedia,
                                             thumbnail = { uri, id, mime ->
                                                 getThumbnail(uri,id,mime)
                                             },
@@ -259,7 +262,7 @@ private fun MediaPickerApp(
                                     FilledTonalButton(onClick = {
                                         setStatePicker(StatePicker.ADD)
                                     }) {
-                                        Text(modifier = Modifier.padding(start = 5.dp),text = stringResource(id = R.string.add) + if (singleSelection) "" else " (${index.value.size})", textAlign = TextAlign.Justify)
+                                        Text(modifier = Modifier.padding(start = 5.dp),text = stringResource(id = R.string.add) + if (multiMedia) "(${index.value.size})" else "", textAlign = TextAlign.Justify)
                                     }
                                 }
                             },
@@ -329,7 +332,7 @@ private fun MediaPickerApp(
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBarMediaViewer(
+internal fun TopBarMediaViewer(
     title: String,
     navIcon: () -> Unit,
     action: () -> Unit,
@@ -358,7 +361,7 @@ private fun TopBarMediaViewer(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun MediaCarousel(media:List<MediaUserV0>,thumbnail: (Uri,Long,String) -> Bitmap, removeItem: (Int) -> Unit){
+internal fun MediaCarousel(media:List<MediaUserV0>, thumbnail: (Uri, Long, String) -> Bitmap, removeItem: (Int) -> Unit){
     val pagerState = rememberPagerState(initialPage = 0, initialPageOffsetFraction = 0f){media.size}
     val context =  LocalContext.current
     HorizontalPager(
@@ -391,13 +394,13 @@ private fun MediaCarousel(media:List<MediaUserV0>,thumbnail: (Uri,Long,String) -
         ){
             Image(
                 painter = rememberAsyncImagePainter(
-                model = ImageRequest.Builder(context)
-                    .data(thumbnail(media[page].media.uriMedia,media[page].media.idMedia,media[page].media.mimeType))
-                    .crossfade(1000)
-                    .build(),
-                imageLoader = ImageLoader(context),
-                placeholder = painterResource(id = R.drawable.image_load),
-            )
+                    model = ImageRequest.Builder(context)
+                        .data(thumbnail(media[page].media.uriMedia,media[page].media.idMedia,media[page].media.mimeType))
+                        .crossfade(1000)
+                        .build(),
+                    imageLoader = ImageLoader(context),
+                    placeholder = painterResource(id = R.drawable.image_load),
+                )
                 ,
                 contentDescription = null,
                 modifier = Modifier
@@ -437,18 +440,7 @@ private fun MediaCarousel(media:List<MediaUserV0>,thumbnail: (Uri,Long,String) -
     }
 }
 @Composable
-private fun LaunchButton(launch: () -> Unit){
-    Box (modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
-        FilledTonalIconButton(
-            modifier = Modifier.size(100.dp),
-            onClick = launch
-        ) {
-            Icon(modifier = Modifier.size(100.dp),imageVector = Icons.Rounded.Add, contentDescription = null)
-        }
-    }
-}
-@Composable
-private fun GridOfMediaThumbnailLoad(){
+internal fun GridOfMediaThumbnailLoad(){
     LazyVerticalGrid(
         columns = GridCells.Fixed( 3 ),
         content = {
@@ -475,8 +467,8 @@ private fun GridOfMediaThumbnailLoad(){
     )
 }
 @Composable
-private fun GridOfMediaThumbnail(
-    singleSelection: Boolean,
+internal fun GridOfMediaThumbnail(
+    multiMedia: Boolean,
     thumbnail: (Uri, Long, String) -> Bitmap,
     media:List<Media>,
     onSelectionMode: (Boolean) -> Unit,
@@ -502,7 +494,7 @@ private fun GridOfMediaThumbnail(
     LazyVerticalGrid(
         columns = GridCells.Fixed( 3 ),
         modifier = Modifier.photoGridDragHandler(
-            singleSelection = singleSelection,
+            multiMedia = multiMedia,
             lazyGridState = state,
             haptics = LocalHapticFeedback.current,
             selectedIds = selectedIds,
@@ -514,25 +506,22 @@ private fun GridOfMediaThumbnail(
         contentPadding = PaddingValues(horizontal = 3.dp),
         userScrollEnabled = userScrollEnabled,
         content = {
-            /*items(media,key = {it.idMedia}){ item->
-
-            }*/
             items(media.size, key = { it }){item ->
                 val selected by remember { derivedStateOf { selectedIds.value.contains(item) } }
                 MediaItem(
                     itemPosition = if (selected) selectedIds.value.indexOf(item) + 1 else null,
-                    singleSelection = singleSelection,
+                    multiMedia = multiMedia,
                     thumbnail = { thumbnail(media[item].uriMedia,media[item].idMedia,media[item].mimeType) },
                     inSelectionMode,
                     selected,
                     media[item].mimeType.split('/')[0],
                     Modifier
                         .then(
-                            if (singleSelection){
+                            if (!multiMedia){
                                 Modifier.toggleable(
                                     value = selected,
                                     interactionSource = remember { MutableInteractionSource() },
-                                    indication = null, // do not show a ripple
+                                    indication = null,
                                     onValueChange = {
                                         if (it) {
                                             selectedIds.value += item
@@ -554,7 +543,7 @@ private fun GridOfMediaThumbnail(
                                         Modifier.toggleable(
                                             value = selected,
                                             interactionSource = remember { MutableInteractionSource() },
-                                            indication = null, // do not show a ripple
+                                            indication = null,
                                             onValueChange = {
                                                 if (it) {
                                                     selectedIds.value += item
@@ -586,9 +575,9 @@ private fun GridOfMediaThumbnail(
     )
 }
 @Composable
-private fun MediaItem(
+internal fun MediaItem(
     itemPosition: Int?,
-    singleSelection: Boolean,
+    multiMedia: Boolean,
     thumbnail: () -> Bitmap,
     inSelectionMode: Boolean,
     selected: Boolean,
@@ -615,7 +604,7 @@ private fun MediaItem(
                 contentScale = ContentScale.Crop
             )
             Box(modifier = Modifier.fillMaxSize(),contentAlignment = Alignment.TopEnd) {
-                if (singleSelection){
+                if (!multiMedia){
                     if (selected) {
                         Box(
                             Modifier
@@ -645,10 +634,10 @@ private fun MediaItem(
             Icon(
                 modifier = Modifier.size(48.dp),
                 imageVector = when (mime){
-                    mimeImage -> {
+                    ConstantsMediaPicker.MIME_IMAGE -> {
                         Icons.Rounded.Image
                     }
-                    mimeVideo -> {
+                    ConstantsMediaPicker.MIME_VIDEO -> {
                         Icons.Rounded.PlayCircle
                     }
                     else -> {
@@ -660,8 +649,9 @@ private fun MediaItem(
         }
     }
 }
-private fun Modifier.photoGridDragHandler(
-    singleSelection: Boolean,
+@SuppressLint("ModifierFactoryUnreferencedReceiver")
+internal fun Modifier.photoGridDragHandler(
+    multiMedia: Boolean,
     lazyGridState: LazyGridState,
     haptics: HapticFeedback,
     selectedIds: MutableState<Set<Int>>,
@@ -680,7 +670,7 @@ private fun Modifier.photoGridDragHandler(
         onDragStart = { offset ->
             onDragStartListen(true)
             lazyGridState.gridItemKeyAtPosition(offset)?.let { key ->
-                if (!singleSelection){
+                if (multiMedia){
                     if (!selectedIds.value.contains(key)) {
                         haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                         initialKey = key
@@ -718,7 +708,7 @@ private fun Modifier.photoGridDragHandler(
     )
 }
 @Composable
-private fun MyCenterTextInCanvas(item:String,bdColor:Color,bgColor:Color) {
+internal fun MyCenterTextInCanvas(item:String, bdColor: Color, bgColor: Color) {
     val textMeasurer = rememberTextMeasurer()
     val textLayoutResult: TextLayoutResult = textMeasurer.measure(text = AnnotatedString(item))
     val textSize = textLayoutResult.size

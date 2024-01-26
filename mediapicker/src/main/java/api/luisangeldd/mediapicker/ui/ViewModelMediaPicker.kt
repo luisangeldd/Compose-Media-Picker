@@ -1,21 +1,26 @@
 package api.luisangeldd.mediapicker.ui
 
+import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import api.luisangeldd.mediapicker.core.MediaPickerModule
+import api.luisangeldd.mediapicker.core.MediaPickerModuleImpl
 import api.luisangeldd.mediapicker.core.StatePicker
 import api.luisangeldd.mediapicker.core.StateRequest
 import api.luisangeldd.mediapicker.core.StatusRequest
 import api.luisangeldd.mediapicker.data.model.Media
 import api.luisangeldd.mediapicker.data.model.MediaUser
 import api.luisangeldd.mediapicker.data.model.MediaUserV0
-import api.luisangeldd.mediapicker.data.MediaPickerUseCase
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class ViewModelMediaPicker (private val mediaPickerUseCase: MediaPickerUseCase): ViewModel(){
+class ViewModelMediaPicker (
+    context: Context
+): ViewModel(){
+    private val mediaPickerModule: MediaPickerModule = MediaPickerModuleImpl(context)
+
     private val _statePicker = MutableStateFlow(StatePicker.CLOSE)
     val statePicker: StateFlow<StatePicker> = _statePicker
 
@@ -36,7 +41,7 @@ class ViewModelMediaPicker (private val mediaPickerUseCase: MediaPickerUseCase):
     fun getMedia() {
         viewModelScope.launch {
             _stateRequestMedia.value = StateRequest.START
-            val data = mediaPickerUseCase.fetchMedia()
+            val data = mediaPickerModule.mediaPickerUseCase.fetchMedia()
             _media.value = when {
                 data.isEmpty() -> {
                     _statusRequestMedia.value = StatusRequest.EMPTY
@@ -50,7 +55,7 @@ class ViewModelMediaPicker (private val mediaPickerUseCase: MediaPickerUseCase):
             _stateRequestMedia.value = StateRequest.END
         }
     }
-    fun getThumbnail(uri : Uri, id : Long, mimeType : String) = mediaPickerUseCase.fetchThumbnail(uri, id, mimeType)
+    fun getThumbnail(uri : Uri, id : Long, mimeType : String) = mediaPickerModule.mediaPickerUseCase.fetchThumbnail(uri, id, mimeType)
 
     fun setMedia(data: List<MediaUserV0>) {
         viewModelScope.launch {

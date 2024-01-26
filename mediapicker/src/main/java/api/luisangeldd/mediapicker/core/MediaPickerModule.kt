@@ -10,7 +10,7 @@ interface MediaPickerModule{
     val mediaPickerUseCase: MediaPickerUseCase
 }
 
-class MediaPickerModuleImpl (private val appContext: Context) : MediaPickerModule{
+internal class MediaPickerModuleImpl (private val appContext: Context) : MediaPickerModule{
     override val mediaPickerRepo: MediaPickerRepo by lazy {
         MediaPickerRepoImpl(appContext)
     }

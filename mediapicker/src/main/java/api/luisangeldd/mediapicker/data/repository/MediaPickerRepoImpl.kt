@@ -14,10 +14,10 @@ import android.provider.MediaStore.MediaColumns
 import android.util.Size
 import androidx.core.graphics.drawable.toBitmap
 import api.luisangeldd.mediapicker.R
-import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.imageExtensionsSupport
-import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.mimeImage
-import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.mimeVideo
-import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.videoExtensionsSupport
+import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.IMAGE_EXTENSIONS_SUPPORT
+import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.MIME_IMAGE
+import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.MIME_VIDEO
+import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.VIDEO_EXTENSIONS_SUPPORT
 import api.luisangeldd.mediapicker.data.model.Media
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -31,11 +31,29 @@ class MediaPickerRepoImpl(private val context: Context) : MediaPickerRepo {
                 selectionMediaVideo()
                 val sortOrderPictures = Images.Media.DATE_TAKEN + " DESC"
                 val sortOrderVideos = Video.Media.DATE_TAKEN + " DESC"
-                val imageList = queryUri(context, Images.Media.EXTERNAL_CONTENT_URI, selectionMediaImage.toString(), selectionArgsMediaImage.toTypedArray(), sortOrderPictures)
-                    .use { it?.getMediaPicturesFromCursor() ?: listOf() }
-                val videoList = queryUri(context, Video.Media.EXTERNAL_CONTENT_URI, selectionMediaVideo.toString(), selectionArgsMediaVideo.toTypedArray(), sortOrderVideos)
-                    .use { it?.getMediaVideosFromCursor() ?: listOf() }
-                (imageList + videoList).sortedWith(compareByDescending { it.fileMedia.lastModified() })
+                val imageList = queryUri(
+                    context,
+                    Images.Media.EXTERNAL_CONTENT_URI,
+                    selectionMediaImage.toString(),
+                    selectionArgsMediaImage.toTypedArray(),
+                    sortOrderPictures
+                ).use {
+                    it?.getMediaPicturesFromCursor() ?: listOf()
+                }
+                val videoList = queryUri(
+                    context,
+                    Video.Media.EXTERNAL_CONTENT_URI,
+                    selectionMediaVideo.toString(),
+                    selectionArgsMediaVideo.toTypedArray(),
+                    sortOrderVideos
+                ).use {
+                    it?.getMediaVideosFromCursor() ?: listOf()
+                }
+                (imageList + videoList).sortedWith(
+                    compareByDescending {
+                        it.fileMedia.lastModified()
+                    }
+                )
             }catch (e:Exception){
                 emptyList()
             }
@@ -104,10 +122,10 @@ class MediaPickerRepoImpl(private val context: Context) : MediaPickerRepo {
                 context.contentResolver.loadThumbnail(uri, Size(640, 480), null)
             } else {
                 val bmp = when (mimeType.split('/')[0]){
-                    mimeImage -> {
+                    MIME_IMAGE -> {
                         Images.Thumbnails.getThumbnail(context.contentResolver, id, Images.Thumbnails.MINI_KIND, null)
                     }
-                    mimeVideo -> {
+                    MIME_VIDEO -> {
                         Video.Thumbnails.getThumbnail(context.contentResolver, id, Images.Thumbnails.MINI_KIND, null)
                     }
                     else -> {
@@ -118,21 +136,21 @@ class MediaPickerRepoImpl(private val context: Context) : MediaPickerRepo {
             }
         }
         private fun selectionMediaImage() {
-            if (imageExtensionsSupport.isNotEmpty()) {
+            if (IMAGE_EXTENSIONS_SUPPORT.isNotEmpty()) {
                 selectionMediaImage.append(Images.Media.MIME_TYPE + " IN (")
-                for (i in imageExtensionsSupport.indices) {
+                for (i in IMAGE_EXTENSIONS_SUPPORT.indices) {
                     selectionMediaImage.append("?,")
-                    selectionArgsMediaImage.add(mimeImage+"/"+imageExtensionsSupport[i])
+                    selectionArgsMediaImage.add(MIME_IMAGE+"/"+IMAGE_EXTENSIONS_SUPPORT[i])
                 }
                 selectionMediaImage.replace(selectionMediaImage.length - 1, selectionMediaImage.length, ")")
             }
         }
         private fun selectionMediaVideo() {
-            if (videoExtensionsSupport.isNotEmpty()) {
+            if (VIDEO_EXTENSIONS_SUPPORT.isNotEmpty()) {
                 selectionMediaVideo.append(Video.Media.MIME_TYPE + " IN (")
-                for (i in videoExtensionsSupport.indices) {
+                for (i in VIDEO_EXTENSIONS_SUPPORT.indices) {
                     selectionMediaVideo.append("?,")
-                    selectionArgsMediaVideo.add(mimeVideo+"/"+videoExtensionsSupport[i])
+                    selectionArgsMediaVideo.add(MIME_VIDEO+"/"+VIDEO_EXTENSIONS_SUPPORT[i])
                 }
                 selectionMediaVideo.replace(selectionMediaVideo.length - 1, selectionMediaVideo.length, ")")
             }

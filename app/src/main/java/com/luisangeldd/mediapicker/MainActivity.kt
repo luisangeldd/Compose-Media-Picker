@@ -1,22 +1,106 @@
 package com.luisangeldd.mediapicker
 
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import api.luisangeldd.mediapicker.ui.MediaPicker
 import com.luisangeldd.mediapicker.ui.theme.MediaPickerTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            //val mainViewModel = viewModel<MainViewModel>()
-            //val mediaUser by mainViewModel.mediaSelectedUser.collectAsState()
+            var backPressCount by rememberSaveable { mutableIntStateOf(0) }
+            var resetCounterJob by remember { mutableStateOf<Job?>(null) }
+            val resetCounterAfterDelay: (Int) -> Job = {
+                val resetDelayMillis = 5000L
+                CoroutineScope(Dispatchers.IO).launch {
+                    delay(resetDelayMillis)
+                    backPressCount = 0
+                }
+            }
+            val backPressedDispatcher: OnBackPressedDispatcher? = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+            val backCallback = remember {
+                object : OnBackPressedCallback(true) {
+                    override fun handleOnBackPressed() {
+                        backPressCount++
+                        if (backPressCount >= 3) {
+                            Log.d("backStack","backStack: finish")
+                            finishAndRemoveTask()
+                        }
+                        resetCounterJob?.cancel()
+                        resetCounterJob = resetCounterAfterDelay(backPressCount)
+                    }
+                }
+            }
+            DisposableEffect(key1 = backPressedDispatcher) {
+                Log.d("backStack","backStack: OnBackPressedCallback")
+                backPressedDispatcher?.addCallback(backCallback)
+
+                onDispose {
+                    Log.d("backStack","backStack: OnBackPressedCallback")
+                    backCallback.remove()
+                }
+            }
+
+            // permisos solicitados al telefono
+            val permissionsToRequest =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+                } else {
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE , Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                }
+            var action: () -> Unit ={} // funcion de disparo agregar en tu metodo para solicitar permisos cuando estos sean correctos
+            val scope = rememberCoroutineScope()
+            // recuerda debes de solicilitar permisos de almacenamiento para poder acceder al contenidp  de tu telefono
+            // en este caso se uso un rememberLauncherForActivityResult pero podrias usar cualquier otra libreria que conciderara adecuada
+            // recuerda crear una funcion de disparo como "action" ya que esta recuperar la accion de mostrar el contenido
+            val multiplePermissionResultLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestMultiplePermissions(),
+                onResult = { perms ->
+                    scope.launch {
+                        if (perms[permissionsToRequest[0]] == true && perms[permissionsToRequest[1]] == true) {
+                            action() // funcion de disparo cuando se den los permisos al presionar el boton se consume el contenido de tu telefono
+                        }
+                    }
+                }
+            )
             MediaPickerTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -24,17 +108,23 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Column {
+                        Text(text = "veces precionado hacia atras: $backPressCount")
                         MediaPicker(
-                            mediaPickerUseCase = App.mediaPickerModule.mediaPickerUseCase,
-                            getMedia = {
+                            actionStart = {
+                                action = it // funcion de disparta action recuperando la accion de abrir el contenido
+                            },
+                            getMedia = {// recupera una lista de objetos Mediauser la cual contiene la Uri y el File de los archivos seleccionados
 
                             }
                         )
-                        /*LazyColumn(content = {
-                            items(mediaUser){
-                                Text(text = "${it.fileMedia}")
+                        Box (modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
+                            FilledTonalIconButton(
+                                modifier = Modifier.size(100.dp),
+                                onClick = { multiplePermissionResultLauncher.launch(permissionsToRequest) }
+                            ) {
+                                Icon(modifier = Modifier.size(100.dp),imageVector = Icons.Rounded.Add, contentDescription = null)
                             }
-                        })*/
+                        }
                     }
                 }
             }
