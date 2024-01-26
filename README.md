@@ -1,6 +1,6 @@
 <div align="center">
 
-# MediaPicker
+# Compose-Media-Picker
 
 ### Obtenga archivos de video/imagen de su dispositivo Android, alternativa al administrador de archivos predeterminado de Android.
 
