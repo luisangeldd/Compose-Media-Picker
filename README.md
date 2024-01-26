@@ -116,6 +116,30 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            // request permissions
+            val permissionsToRequest =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+                } else {
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE , Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                }
+            var action: () -> Unit ={} // add trigger function in your method to request permissions when they are correct
+            val scope = rememberCoroutineScope()
+            /*
+            Remember you must request storage permissions to be able to access the content of your phone.
+            In this case, a rememberLauncherForActivityResult was used, but you could use any other library that you considered appropriate.
+            Remember to create a trigger function like "action" since it is recovering the action of displaying the content
+            */
+            val multiplePermissionResultLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestMultiplePermissions(),
+                onResult = { perms ->
+                    scope.launch {
+                        if (perms[permissionsToRequest[0]] == true && perms[permissionsToRequest[1]] == true) {
+                            action() // Shooting function when permissions are given, pressing the button consumes the content of your phone
+                        }
+                    }
+                }
+            )
             AppNameTheme {
                 MediaPicker(
                      actionStart = {
