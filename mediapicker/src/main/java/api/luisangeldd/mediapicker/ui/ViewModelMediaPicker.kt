@@ -12,11 +12,12 @@ import api.luisangeldd.mediapicker.core.StatusRequest
 import api.luisangeldd.mediapicker.data.model.Media
 import api.luisangeldd.mediapicker.data.model.MediaUser
 import api.luisangeldd.mediapicker.data.model.MediaUserV0
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class ViewModelMediaPicker (
+internal class ViewModelMediaPicker (
     context: Context
 ): ViewModel(){
     private val mediaPickerModule: MediaPickerModule = MediaPickerModuleImpl(context)
@@ -55,16 +56,30 @@ class ViewModelMediaPicker (
             _stateRequestMedia.value = StateRequest.END
         }
     }
-    fun getThumbnail(uri : Uri, id : Long, mimeType : String) = mediaPickerModule.mediaPickerUseCase.fetchThumbnail(uri, id, mimeType)
+    suspend fun getThumbnail(
+        uri : Uri,
+        id : Long,
+        mimeType : String,
+        resolutionHeight: Boolean = true
+    ) = viewModelScope.async {
+        mediaPickerModule.mediaPickerUseCase.fetchThumbnail(
+            uri,
+            id,
+            mimeType
+            ,resolutionHeight
+        )
+    }.await()
 
     fun setMedia(data: List<MediaUserV0>) {
         viewModelScope.launch {
             _mediaSelected.value = data
         }
     }
+
     fun statePicker(state: StatePicker) {
         viewModelScope.launch {
             _statePicker.value = state
         }
     }
+
 }

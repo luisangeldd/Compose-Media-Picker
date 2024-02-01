@@ -1,16 +1,16 @@
 package api.luisangeldd.mediapicker.core
 
-enum class StatusRequest {
+internal enum class StatusRequest {
     IDLE,
     EMPTY,
     NOT_EMPTY
 }
-enum class StateRequest {
+internal enum class StateRequest {
     IDLE,
     START,
     END
 }
-enum class StatePicker{
+internal enum class StatePicker{
     CLOSE,
     OPEN,
     DRAG,

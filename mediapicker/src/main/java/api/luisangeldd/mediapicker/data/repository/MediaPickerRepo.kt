@@ -6,5 +6,10 @@ import api.luisangeldd.mediapicker.data.model.Media
 
 interface MediaPickerRepo {
     suspend fun fetchMedia(): List<Media>
-    fun fetchThumbnail(uri : Uri, id : Long, mimeType : String): Bitmap
+    suspend fun fetchThumbnail(
+        uri : Uri,
+        id : Long,
+        mimeType : String,
+        resolutionHeight: Boolean = true
+    ): Bitmap
 }

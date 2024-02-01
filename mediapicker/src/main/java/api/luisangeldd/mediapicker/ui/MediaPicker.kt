@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -29,14 +30,13 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
-import androidx.compose.material.icons.rounded.BrokenImage
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
@@ -68,6 +68,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -95,16 +96,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import api.luisangeldd.mediapicker.R
-import api.luisangeldd.mediapicker.core.ConstantsMediaPicker
+import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.MIME_IMAGE
+import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.MIME_VIDEO
 import api.luisangeldd.mediapicker.core.StatePicker
 import api.luisangeldd.mediapicker.core.StateRequest
 import api.luisangeldd.mediapicker.core.StatusRequest
 import api.luisangeldd.mediapicker.data.model.Media
 import api.luisangeldd.mediapicker.data.model.MediaUser
 import api.luisangeldd.mediapicker.data.model.MediaUserV0
-import coil.ImageLoader
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -127,13 +126,16 @@ import kotlin.math.absoluteValue
  *
  * @param actionStart returns the trigger action to trigger the window which is activated when storage permissions have been granted.
  * @param multiMedia set if use to select a single o multi media items, true for multi medias and false for single selection.
+ * @param showCarousel set if use to show the carousel of media selected, it is "true" for the fault you can change to "false" if you don't show and use a own implementation.
  * @param getMedia returns a list of Media type objects which allows recovering the Uri and File of the selected files.
  */
 @Composable
 fun MediaPicker(
     actionStart: (() -> Unit) -> Unit,
     multiMedia: Boolean = true,
-    getMedia: (List<MediaUser>) -> Unit
+    showCarousel: Boolean = true,
+    getMedia: (List<MediaUser>) -> Unit,
+    removeItem: ((Int) -> Unit) -> Unit
 ){
     val context = LocalContext.current
     val viewModelMediaPicker = viewModel<ViewModelMediaPicker>(
@@ -149,38 +151,39 @@ fun MediaPicker(
     val stateRequestMedia by viewModelMediaPicker.stateRequestMedia.collectAsState()
     val statusRequestMedia by viewModelMediaPicker.statusRequestMedia.collectAsState()
     val mediaSelected by viewModelMediaPicker.mediaSelected.collectAsState()
-    val mediaSelectedUser by viewModelMediaPicker.mediaSelectedUser.collectAsState()
 
     MediaPickerStart(
         multiMedia = multiMedia,
+        showCarousel = showCarousel,
         statePicker = statePicker,
         media = media,
         stateRequestMedia = stateRequestMedia,
         statusRequestMedia = statusRequestMedia,
         mediaSelected = mediaSelected,
-        mediaSelectedUser = mediaSelectedUser,
-        getThumbnail = { uri,long,mime -> viewModelMediaPicker.getThumbnail(uri,long,mime)},
-        setMedia = { viewModelMediaPicker.setMedia(it)},
-        setStatePicker = { viewModelMediaPicker.statePicker(it)},
-        setMediaCollect = { getMedia(mediaSelectedUser) },
-        getMedia = { viewModelMediaPicker.getMedia() }
+        getThumbnail = viewModelMediaPicker::getThumbnail,
+        setMedia = viewModelMediaPicker::setMedia,
+        setStatePicker = viewModelMediaPicker::statePicker,
+        setMediaCollect = getMedia,
+        getMedia = viewModelMediaPicker::getMedia,
+        removeItem = removeItem
     )
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun MediaPickerStart(
     multiMedia: Boolean,
+    showCarousel: Boolean,
     statePicker: StatePicker,
     media: List<Media>,
     stateRequestMedia: StateRequest,
     statusRequestMedia: StatusRequest,
     mediaSelected: List<MediaUserV0>,
-    mediaSelectedUser: List<MediaUser>,
-    getThumbnail: (Uri, Long, String) -> Bitmap,
+    getThumbnail: suspend (Uri, Long, String) -> Bitmap?,
     setMedia: (List<MediaUserV0>) -> Unit,
     setStatePicker:(StatePicker) -> Unit,
-    setMediaCollect: () -> Unit,
-    getMedia: () -> Unit
+    setMediaCollect: (List<MediaUser>) -> Unit,
+    getMedia: () -> Unit,
+    removeItem: ((Int)-> Unit) -> Unit
 ){
     val scope = rememberCoroutineScope()
     val state = rememberLazyGridState()
@@ -190,34 +193,50 @@ internal fun MediaPickerStart(
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
-    val openAlertDialog = remember { mutableStateOf(false) }
-    LaunchedEffect(key1 = mediaSelectedUser, block = {
-        setMediaCollect()
-    })
-    if (multiMedia) {
-        if (mediaSelected.isNotEmpty()){
-            MediaCarousel(mediaSelected, thumbnail = { uri,id,mime -> getThumbnail(uri,id,mime) }) {
-                scope.launch {
-                    index.value -= it
-                    setMedia(index.value.map { MediaUserV0(item = it,media = media[it]) })
-                }
+    val (openAlertDialog,onOpenAlertDialog) = rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(key1 = mediaSelected, block = {
+        setMediaCollect(
+            mediaSelected.map {
+                MediaUser(item = it.item, uriMedia = it.media.uriMedia, fileMedia = it.media.fileMedia)
             }
+        )
+    })
+    removeItem {
+        scope.launch {
+            index.value -= it
+            setMedia(index.value.map { MediaUserV0(item = it, media = media[it]) })
+        }
+    }
+    if (mediaSelected.isNotEmpty()){
+        if (showCarousel) {
+            MediaCarousel(
+                media = mediaSelected,
+                thumbnail = getThumbnail,
+                removeItem = {
+                    scope.launch {
+                        index.value -= it
+                        setMedia(index.value.map { MediaUserV0(item = it,media = media[it]) })
+                    }
+                }
+            )
         }
     }
     if (statePicker == StatePicker.OPEN) {
         ModalBottomSheet(
             onDismissRequest = {setStatePicker(StatePicker.DRAG) },
-            sheetState = bottomSheetState
+            sheetState = bottomSheetState,
+            shape = RoundedCornerShape(0.dp)
         ) {
             Scaffold(
                 topBar = {
                     TopBarMediaViewer(
+                        multiMedia = multiMedia,
                         title = "Media",
                         navIcon = {
                             setStatePicker(StatePicker.CLOSE)
                         },
                         action = {
-                            openAlertDialog.value = true
+                            onOpenAlertDialog(true)
                         },
                         isNotEmpty = index.value.isNotEmpty()
                     )
@@ -233,14 +252,16 @@ internal fun MediaPickerStart(
                             }
                             StateRequest.END -> {
                                 when(statusRequestMedia){
-                                    StatusRequest.IDLE -> {}
-                                    StatusRequest.EMPTY -> {}
+                                    StatusRequest.IDLE -> {
+                                        GridOfMediaThumbnailLoad()
+                                    }
+                                    StatusRequest.EMPTY -> {
+
+                                    }
                                     StatusRequest.NOT_EMPTY ->{
                                         GridOfMediaThumbnail(
                                             multiMedia = multiMedia,
-                                            thumbnail = { uri, id, mime ->
-                                                getThumbnail(uri,id,mime)
-                                            },
+                                            thumbnail = getThumbnail,
                                             media = media,
                                             onSelectionMode = onSelectedMode,
                                             itemsSelected = { data -> index.value = data},
@@ -273,7 +294,7 @@ internal fun MediaPickerStart(
             )
         }
     }
-    if (openAlertDialog.value){
+    if (openAlertDialog){
         AlertDialog(
             icon = {
                 Icon(Icons.Default.Info, contentDescription = null)
@@ -288,7 +309,7 @@ internal fun MediaPickerStart(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        openAlertDialog.value = false
+                        onOpenAlertDialog(false)
                         scope.launch {
                             index.value = emptySet()
                             setMedia(emptyList())
@@ -301,7 +322,7 @@ internal fun MediaPickerStart(
             dismissButton = {
                 TextButton(
                     onClick = {
-                        openAlertDialog.value = false
+                        onOpenAlertDialog(false)
                     }
                 ) {
                     Text(text = stringResource(id = R.string.dismiss),textAlign = TextAlign.Justify)
@@ -322,7 +343,9 @@ internal fun MediaPickerStart(
                                 index.value = indexAux.value
                             }
                         }
-                        StatePicker.ADD -> setMedia(index.value.map { MediaUserV0(item = it,media = media[it]) })
+                        StatePicker.ADD -> {
+                            setMedia(index.value.map { MediaUserV0(item = it, media = media[it]) })
+                        }
                         else -> {}
                     }
                 }
@@ -333,6 +356,7 @@ internal fun MediaPickerStart(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TopBarMediaViewer(
+    multiMedia: Boolean,
     title: String,
     navIcon: () -> Unit,
     action: () -> Unit,
@@ -349,9 +373,11 @@ internal fun TopBarMediaViewer(
                 Text(text = title)
             },
             actions = {
-                if (isNotEmpty) {
-                    IconButton(onClick = action) {
-                        Icon(imageVector = Icons.Filled.Delete, contentDescription = null)
+                if (multiMedia){
+                    if (isNotEmpty) {
+                        IconButton(onClick = action) {
+                            Icon(imageVector = Icons.Filled.Delete, contentDescription = null)
+                        }
                     }
                 }
             }
@@ -361,9 +387,13 @@ internal fun TopBarMediaViewer(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-internal fun MediaCarousel(media:List<MediaUserV0>, thumbnail: (Uri, Long, String) -> Bitmap, removeItem: (Int) -> Unit){
+internal fun MediaCarousel(
+    media:List<MediaUserV0>,
+    thumbnail: suspend (Uri, Long, String) -> Bitmap?,
+    removeItem: (Int) -> Unit
+){
     val pagerState = rememberPagerState(initialPage = 0, initialPageOffsetFraction = 0f){media.size}
-    val context =  LocalContext.current
+    val scope = rememberCoroutineScope()
     HorizontalPager(
         contentPadding = PaddingValues(horizontal = 100.dp),
         state = pagerState,
@@ -392,21 +422,16 @@ internal fun MediaCarousel(media:List<MediaUserV0>, thumbnail: (Uri, Long, Strin
                 },
             contentAlignment = Alignment.Center
         ){
-            Image(
-                painter = rememberAsyncImagePainter(
-                    model = ImageRequest.Builder(context)
-                        .data(thumbnail(media[page].media.uriMedia,media[page].media.idMedia,media[page].media.mimeType))
-                        .crossfade(1000)
-                        .build(),
-                    imageLoader = ImageLoader(context),
-                    placeholder = painterResource(id = R.drawable.image_load),
-                )
-                ,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .matchParentSize(),
-                contentScale = ContentScale.Crop
+            GetImage (
+                modifier = Modifier.size(200.dp),
+                page = page,
+                thumbnail = {
+                    thumbnail(
+                        media[page].media.uriMedia,
+                        media[page].media.idMedia,
+                        media[page].media.mimeType
+                    )
+                }
             )
             Box (modifier = Modifier.size(200.dp), contentAlignment = Alignment.TopEnd){
                 FilledTonalIconButton(
@@ -427,7 +452,11 @@ internal fun MediaCarousel(media:List<MediaUserV0>, thumbnail: (Uri, Long, Strin
                             }
                         }
                     ,
-                    onClick = { removeItem(media[page].item) }
+                    onClick = {
+                        scope.launch {
+                            removeItem(media[page].item)
+                        }
+                    }
                 ) {
                     Icon(
                         Icons.Rounded.Close,
@@ -469,7 +498,7 @@ internal fun GridOfMediaThumbnailLoad(){
 @Composable
 internal fun GridOfMediaThumbnail(
     multiMedia: Boolean,
-    thumbnail: (Uri, Long, String) -> Bitmap,
+    thumbnail: suspend (Uri, Long, String) -> Bitmap?,
     media:List<Media>,
     onSelectionMode: (Boolean) -> Unit,
     itemsSelected: (Set<Int>) -> Unit,
@@ -482,6 +511,13 @@ internal fun GridOfMediaThumbnail(
     val autoScrollSpeed = remember { mutableFloatStateOf(0f) }
     val (isDrag,onDrag) = rememberSaveable { mutableStateOf(false) }
     onSelectionMode(selectedIds.value.isNotEmpty())
+    LaunchedEffect(key1 = inSelectionMode , block = {
+        onPrevItem(
+            if (selectedIds.value.isNotEmpty()) {
+                selectedIds.value.first()
+            } else null
+        )
+    })
     LaunchedEffect(autoScrollSpeed.floatValue) {
         if (autoScrollSpeed.floatValue != 0f) {
             while (isActive) {
@@ -511,13 +547,13 @@ internal fun GridOfMediaThumbnail(
                 MediaItem(
                     itemPosition = if (selected) selectedIds.value.indexOf(item) + 1 else null,
                     multiMedia = multiMedia,
-                    thumbnail = { thumbnail(media[item].uriMedia,media[item].idMedia,media[item].mimeType) },
-                    inSelectionMode,
-                    selected,
-                    media[item].mimeType.split('/')[0],
-                    Modifier
+                    inSelectionMode = inSelectionMode,
+                    selected = selected,
+                    mime = media[item].mimeType.split('/')[0],
+                    modifier = Modifier
                         .then(
                             if (!multiMedia){
+                                //if (selectedIds.value.isEmpty())
                                 Modifier.toggleable(
                                     value = selected,
                                     interactionSource = remember { MutableInteractionSource() },
@@ -535,11 +571,13 @@ internal fun GridOfMediaThumbnail(
                                         }
                                     }
                                 )
-                            } else {
+                            }
+                            else {
                                 if (inSelectionMode) {
                                     if (isDrag) {
                                         Modifier
-                                    } else {
+                                    }
+                                    else {
                                         Modifier.toggleable(
                                             value = selected,
                                             interactionSource = remember { MutableInteractionSource() },
@@ -553,7 +591,8 @@ internal fun GridOfMediaThumbnail(
                                             }
                                         )
                                     }
-                                } else {
+                                }
+                                else {
                                     Modifier.toggleable(
                                         value = selected,
                                         interactionSource = remember { MutableInteractionSource() },
@@ -568,7 +607,19 @@ internal fun GridOfMediaThumbnail(
                                     )
                                 }
                             }
+                        ),
+                    imageItem = {
+                        GetImage (
+                            page = item,
+                            thumbnail = {
+                                thumbnail(
+                                    media[item].uriMedia,
+                                    media[item].idMedia,
+                                    media[item].mimeType
+                                )
+                            }
                         )
+                    }
                 )
             }
         }
@@ -578,31 +629,22 @@ internal fun GridOfMediaThumbnail(
 internal fun MediaItem(
     itemPosition: Int?,
     multiMedia: Boolean,
-    thumbnail: () -> Bitmap,
     inSelectionMode: Boolean,
     selected: Boolean,
     mime: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    imageItem: @Composable () -> Unit
 ) {
     val bdColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
     val bgColor = MaterialTheme.colorScheme.primary
-
     Surface(
         modifier = modifier
             .aspectRatio(1f)
             .padding(3.dp),
         tonalElevation = 3.dp
     ) {
-
         Box (contentAlignment = Alignment.Center) {
-            Image(
-                bitmap = thumbnail().asImageBitmap(),
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .matchParentSize(),
-                contentScale = ContentScale.Crop
-            )
+            imageItem()
             Box(modifier = Modifier.fillMaxSize(),contentAlignment = Alignment.TopEnd) {
                 if (!multiMedia){
                     if (selected) {
@@ -631,8 +673,18 @@ internal fun MediaItem(
                     }
                 }
             }
-            Icon(
-                modifier = Modifier.size(48.dp),
+            when (mime){
+                MIME_IMAGE -> {}
+                MIME_VIDEO -> {
+                    Icon(
+                        modifier = Modifier,
+                        imageVector = Icons.Rounded.PlayCircle,
+                        contentDescription = null
+                    )
+                }
+            }
+            /*Icon(
+                modifier = Modifier,
                 imageVector = when (mime){
                     ConstantsMediaPicker.MIME_IMAGE -> {
                         Icons.Rounded.Image
@@ -645,7 +697,7 @@ internal fun MediaItem(
                     }
                 },
                 contentDescription = null
-            )
+            )*/
         }
     }
 }
@@ -730,5 +782,50 @@ internal fun MyCenterTextInCanvas(item:String, bdColor: Color, bgColor: Color) {
                 (canvasHeight - textSize.height) / 2f
             ),
         )
+    }
+}
+@Composable
+internal fun GetImage(
+    modifier: Modifier = Modifier,
+    page: Int,
+    thumbnail: suspend () -> Bitmap?,
+    contentTop: @Composable (() -> Unit)? = null
+){
+    val bitmap = remember { mutableStateOf<Bitmap?>(null) }
+    LaunchedEffect(key1 = bitmap, block = {
+        if (bitmap.value == null) {
+            bitmap.value = thumbnail()
+        }
+    })
+    Crossfade(
+        targetState = bitmap.value,
+        label = "transitionBitmap"
+    ) {
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+            when(it){
+                is Bitmap -> {
+                    Image(
+                        bitmap = it.asImageBitmap(),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .matchParentSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                    when (contentTop){
+                        is () -> Unit-> {
+                            contentTop()
+                        }
+                    }
+                }
+                else ->{
+                    Icon(
+                        painter = painterResource(id = R.drawable.image_load),
+                        contentDescription = null,
+                        modifier = Modifier.scale(2f)
+                    )
+                }
+            }
+        }
     }
 }

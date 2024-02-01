@@ -5,7 +5,7 @@ import api.luisangeldd.mediapicker.data.MediaPickerUseCase
 import api.luisangeldd.mediapicker.data.repository.MediaPickerRepo
 import api.luisangeldd.mediapicker.data.repository.MediaPickerRepoImpl
 
-interface MediaPickerModule{
+internal interface MediaPickerModule{
     val mediaPickerRepo: MediaPickerRepo
     val mediaPickerUseCase: MediaPickerUseCase
 }

@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         minSdk = 21
-        version = "1.2.1"
+        version = "1.2.2-beta-1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -46,14 +46,11 @@ android {
 
 dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-    //implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-    implementation("androidx.compose.material3:material3-android:1.2.0-beta02")
+    implementation("androidx.compose.material3:material3-android:1.2.0-rc01")
     implementation("androidx.compose.material:material:1.6.0")
     implementation("androidx.compose.ui:ui-util:1.6.0")
     // Icons
     implementation ("androidx.compose.material:material-icons-extended:1.6.0")
-    // coil
-    implementation("io.coil-kt:coil-compose:2.5.0")
     //test
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
@@ -70,7 +67,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.luisangeldd"
                 artifactId = "MediaPicker"
-                version = "1.2.1"
+                version = "1.2.2-beta-1.0"
             }
         }
     }

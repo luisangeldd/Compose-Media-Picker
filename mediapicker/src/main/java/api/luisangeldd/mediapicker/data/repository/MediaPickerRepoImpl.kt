@@ -23,7 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
-class MediaPickerRepoImpl(private val context: Context) : MediaPickerRepo {
+internal class MediaPickerRepoImpl(private val context: Context) : MediaPickerRepo {
     override suspend fun fetchMedia(): List<Media> {
         return withContext(Dispatchers.IO) {
             try{
@@ -60,7 +60,9 @@ class MediaPickerRepoImpl(private val context: Context) : MediaPickerRepo {
         }
     }
 
-    override fun fetchThumbnail(uri : Uri, id : Long, mimeType : String) = fetchThumbnail(context, uri, id, mimeType)
+    override suspend fun fetchThumbnail(uri : Uri, id : Long, mimeType : String, resolutionHeight: Boolean) = withContext(Dispatchers.IO) {
+        fetchThumbnail(context, uri, id, mimeType,resolutionHeight)
+    }
 
     companion object {
         private val selectionMediaImage = StringBuilder("")
@@ -116,25 +118,64 @@ class MediaPickerRepoImpl(private val context: Context) : MediaPickerRepo {
         private fun getBrokenThumbnail(context: Context, width: Int, height: Int): Bitmap {
             return context.resources.getDrawable(R.drawable.broken_media, null).toBitmap(width, height)
         }
+        @SuppressLint("NewApi")
         @Suppress("DEPRECATION")
-        private fun fetchThumbnail(context: Context,uri : Uri, id : Long, mimeType : String) : Bitmap {
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                context.contentResolver.loadThumbnail(uri, Size(640, 480), null)
-            } else {
+        private fun fetchThumbnail(
+            context: Context,
+            uri : Uri,
+            id : Long,
+            mimeType : String,
+            resolutionHeight: Boolean
+        ) : Bitmap = when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
+                val resolution = when (resolutionHeight) {
+                    true -> {
+                        listOf(512,384)
+                    }
+                    false -> {
+                        listOf(96,96)
+                    }
+                }
+                context.contentResolver.loadThumbnail(
+                    uri,
+                    Size(resolution[0], resolution[1]),
+                    null
+                )
+            }
+            else -> {
+                val resolution = when (resolutionHeight) {
+                    true -> {
+                        1
+                    }
+                    false -> {
+                        3
+                    }
+                }
                 val bmp = when (mimeType.split('/')[0]){
                     MIME_IMAGE -> {
-                        Images.Thumbnails.getThumbnail(context.contentResolver, id, Images.Thumbnails.MINI_KIND, null)
+                        Images.Thumbnails.getThumbnail(
+                            context.contentResolver,
+                            id,
+                            resolution,
+                            null
+                        )
                     }
                     MIME_VIDEO -> {
-                        Video.Thumbnails.getThumbnail(context.contentResolver, id, Images.Thumbnails.MINI_KIND, null)
+                        Video.Thumbnails.getThumbnail(
+                            context.contentResolver,
+                            id,
+                            resolution,
+                            null
+                        )
                     }
                     else -> {
                         null
                     }
                 }
-                bmp ?: getBrokenThumbnail(context, 640, 480)
+                bmp ?: getBrokenThumbnail(context, resolution, resolution)
             }
         }
+
         private fun selectionMediaImage() {
             if (IMAGE_EXTENSIONS_SUPPORT.isNotEmpty()) {
                 selectionMediaImage.append(Images.Media.MIME_TYPE + " IN (")
