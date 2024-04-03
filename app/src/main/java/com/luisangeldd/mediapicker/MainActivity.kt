@@ -10,6 +10,7 @@ import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
@@ -39,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import api.luisangeldd.mediapicker.data.model.MediaUser
 import api.luisangeldd.mediapicker.ui.MediaPicker
 import com.luisangeldd.mediapicker.ui.theme.MediaPickerTheme
@@ -51,9 +53,11 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             // control de boton hacia atras pruebas -- inicio
-            var backPressCount by rememberSaveable { mutableIntStateOf(0) }
+            /*var backPressCount by rememberSaveable { mutableIntStateOf(0) }
             var resetCounterJob by remember { mutableStateOf<Job?>(null) }
             val resetCounterAfterDelay: (Int) -> Job = {
                 val resetDelayMillis = 5000L
@@ -84,7 +88,7 @@ class MainActivity : ComponentActivity() {
                     Log.d("backStack","backStack: OnBackPressedCallback")
                     backCallback.remove()
                 }
-            }
+            }*/
             // control de boton hacia atras pruebas -- fin
             // permisos solicitados al telefono
             val mainViewModel by viewModels<MainViewModel>()
@@ -118,7 +122,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Column {
-                        Text(text = "veces precionado hacia atras: $backPressCount")
+                        //Text(text = "veces precionado hacia atras: $backPressCount")
                         MediaPicker(
                             actionStart = {
                                 action = it // action function recovering the action of opening the content
