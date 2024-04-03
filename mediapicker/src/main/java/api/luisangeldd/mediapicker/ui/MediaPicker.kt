@@ -229,7 +229,7 @@ internal fun MediaPickerStart(
                                                                 }
                                                             )
                                                         },
-                                                        items = if (multiMedia) "${if (index.value.size > 99) "99+" else index.value.size}" else ""
+                                                        items = if (multiMedia) "${if (index.value.size > 99) "99+" else index.value.size}" else "1"
                                                     )
                                                 }
                                             },

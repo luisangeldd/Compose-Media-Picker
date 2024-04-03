@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         minSdk = 21
-        version = "1.2.2"
+        version = "1.2.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -52,7 +52,7 @@ dependencies {
     //navigation - compose
     implementation("androidx.navigation:navigation-compose:2.7.7")
     //shimmer
-    implementation("com.valentinilk.shimmer:compose-shimmer:1.2.0")
+    implementation("com.valentinilk.shimmer:compose-shimmer:1.3.0")
     //coil - async - image
     implementation("io.coil-kt:coil-compose:2.6.0")
     // Icons
@@ -73,7 +73,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.luisangeldd"
                 artifactId = "MediaPicker"
-                version = "1.2.2"
+                version = "1.2.3"
             }
         }
     }
