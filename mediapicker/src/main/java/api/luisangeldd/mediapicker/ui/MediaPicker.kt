@@ -132,11 +132,13 @@ internal fun MediaPickerStart(
                 MediaUser(item = it.item, uriMedia = it.media.uriMedia, fileMedia = it.media.fileMedia)
             }
         )
-        removeAllItems{
+    })
+    removeAllItems{
+        scope.launch {
             index.value = emptySet()
             viewModelMediaPicker.setMedia(emptyList())
         }
-    })
+    }
     removeItem {
         scope.launch {
             index.value -= it

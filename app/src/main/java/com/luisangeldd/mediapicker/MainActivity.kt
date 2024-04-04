@@ -128,7 +128,7 @@ class MainActivity : ComponentActivity() {
                             actionStart = {
                                 action = it // action function recovering the action of opening the content
                             },
-                            multiMedia = true,
+                            multiMedia = false,
                             showCarousel = true,
                             getMedia = { mainViewModel.getMedia(it) },
                             removeItem = {
