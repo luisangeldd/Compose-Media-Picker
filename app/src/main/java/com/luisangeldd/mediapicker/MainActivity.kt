@@ -101,6 +101,7 @@ class MainActivity : ComponentActivity() {
                 }
             var action: () -> Unit ={} // funcion de disparo agregar en tu metodo para solicitar permisos cuando estos sean correctos
             var removeItem: (Int) -> Unit = {}
+            var removeAllItems: () -> Unit = {}
             val scope = rememberCoroutineScope()
             // recuerda debes de solicilitar permisos de almacenamiento para poder acceder al contenidp  de tu telefono
             // en este caso se uso un rememberLauncherForActivityResult pero podrias usar cualquier otra libreria que conciderara adecuada
@@ -132,6 +133,9 @@ class MainActivity : ComponentActivity() {
                             getMedia = { mainViewModel.getMedia(it) },
                             removeItem = {
                                 removeItem = it
+                            },
+                            removeAllItems = {
+                                removeAllItems = it
                             }
                         )
                         Box (modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
@@ -145,6 +149,11 @@ class MainActivity : ComponentActivity() {
                         Box (modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
                             Button(onClick = { removeItem(1) }) {
                                 Text(text = "Remove first item")
+                            }
+                        }
+                        Box (modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
+                            Button(onClick = { removeAllItems() }) {
+                                Text(text = "Remove all items")
                             }
                         }
                         LazyColumn(content = {

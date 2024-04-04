@@ -58,7 +58,8 @@ import kotlinx.coroutines.launch
  * @param multiMedia set if use to select a single o multi media items, true for multi medias and false for single selection.
  * @param showCarousel set if use to show the carousel of media selected, it is "true" for the fault you can change to "false" if you don't show and use a own implementation.
  * @param getMedia returns a list of Media type objects which allows recovering the Uri and File of the selected files.
- * @param removeItem returns a function to remove a item at getMedia model return.
+ * @param removeItem returns a function to remove a single item at getMedia model return.
+ * @param removeAllItems returns a function to remove all items at getMedia model return.
  */
 @Composable
 fun MediaPicker(
@@ -66,7 +67,8 @@ fun MediaPicker(
     multiMedia: Boolean = true,
     showCarousel: Boolean = true,
     getMedia: suspend (List<MediaUser>) -> Unit,
-    removeItem: ((Int) -> Unit) -> Unit
+    removeItem: ((Int) -> Unit) -> Unit,
+    removeAllItems: (() -> Unit) -> Unit
 ){
     val context = LocalContext.current
     val viewModelMediaPicker = viewModel<ViewModelMediaPicker>(
@@ -82,7 +84,8 @@ fun MediaPicker(
         multiMedia = multiMedia,
         showCarousel = showCarousel,
         setMediaCollect = getMedia,
-        removeItem = removeItem
+        removeItem = removeItem,
+        removeAllItems = removeAllItems
     )
 }
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -92,7 +95,8 @@ internal fun MediaPickerStart(
     multiMedia: Boolean,
     showCarousel: Boolean,
     setMediaCollect: suspend (List<MediaUser>) -> Unit,
-    removeItem: ((Int)-> Unit) -> Unit
+    removeItem: ((Int)-> Unit) -> Unit,
+    removeAllItems: (() -> Unit) -> Unit
 ){
     val statePicker by viewModelMediaPicker.statePicker.collectAsState()
     val media by viewModelMediaPicker.dataOfMedia.collectAsState()
@@ -128,6 +132,10 @@ internal fun MediaPickerStart(
                 MediaUser(item = it.item, uriMedia = it.media.uriMedia, fileMedia = it.media.fileMedia)
             }
         )
+        removeAllItems{
+            index.value = emptySet()
+            viewModelMediaPicker.setMedia(emptyList())
+        }
     })
     removeItem {
         scope.launch {
