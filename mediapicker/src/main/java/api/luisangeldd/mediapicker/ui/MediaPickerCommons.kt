@@ -63,6 +63,7 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -225,13 +226,18 @@ internal fun BottomAppBarMediaPicker(
         //modifier = Modifier.navigationBarsPadding(),
         actions = {
             Row (
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 15.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ){
                 removeItem()
+                /*FilledTonalIconButton(onClick = { /*TODO*/ }) {
+
+                }*/
                 FilledTonalButton(onClick = addItems) {
-                    Text("Add ($items)")
+                    Text(stringResource(id = R.string.add)+" ($items)")
                 }
                 /*BadgedBox(
                     badge = {

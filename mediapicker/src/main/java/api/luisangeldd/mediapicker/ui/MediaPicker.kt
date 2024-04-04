@@ -3,12 +3,16 @@ package api.luisangeldd.mediapicker.ui
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.ExpandLess
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,7 +26,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -161,244 +167,296 @@ internal fun MediaPickerStart(
                     },
                     closeMediaPicker = { viewModelMediaPicker.statePicker(StatePicker.CLOSE) }
                 )
-            },
-            contentFromMediaPicker = {
-                ViewOfMedia(
-                    state = pagerState,
-                    contentPage = {
-                        when(media.media.stateOfRequestMedia){
-                            StateOfRequest.IDLE, StateOfRequest.START -> {
-                                if (media.media.stateOfRequestMedia == StateOfRequest.IDLE){
-                                    viewModelMediaPicker.getMedia()
-                                }
-                                GridOfMediaLoad(it)
+            }
+        ) {
+            ViewOfMedia(
+                state = pagerState,
+                contentPage = {
+                    when (media.media.stateOfRequestMedia) {
+                        StateOfRequest.IDLE, StateOfRequest.START -> {
+                            if (media.media.stateOfRequestMedia == StateOfRequest.IDLE) {
+                                viewModelMediaPicker.getMedia()
                             }
-                            StateOfRequest.END -> {
-                                when (it) {
-                                    0 -> {
-                                        ContentOfMedia(
-                                            contentFromMediaPicker = { pdd ->
-                                                when(media.media.answerOfRequestMedia){
-                                                    AnswerOfRequest.IDLE, AnswerOfRequest.EMPTY  -> {}
-                                                    AnswerOfRequest.NOT_EMPTY-> {
-                                                        GridOfMediaLoaded(
-                                                            paddingValues = pdd,
-                                                            multiMedia = multiMedia,
-                                                            thumbnail = viewModelMediaPicker::getThumbnail,
-                                                            media = media.media.media,
-                                                            isSelectedMode = isSelectedMode,
-                                                            itemsSelected = { data -> index.value = data},
-                                                            stateLazyGridPhoto = stateLazyGridMedia,
-                                                            isScrolling = isScrollingMedia,
-                                                            userScrollEnabled = true,
-                                                            selectedIds = index
-                                                        )
-                                                    }
-                                                }
-                                            },
-                                            bottomAppBarFromMediaPicker = {
-                                                if (isSelectedMode.value){
-                                                    BottomAppBarMediaPicker(
-                                                        addItems = {
-                                                            viewModelMediaPicker.statePicker(StatePicker.ADD)
+                            GridOfMediaLoad(it)
+                        }
+
+                        StateOfRequest.END -> {
+                            when (it) {
+                                0 -> {
+                                    ContentOfMedia(
+                                        contentFromMediaPicker = { pdd ->
+                                            when (media.media.answerOfRequestMedia) {
+                                                AnswerOfRequest.IDLE, AnswerOfRequest.EMPTY -> {}
+                                                AnswerOfRequest.NOT_EMPTY -> {
+                                                    GridOfMediaLoaded(
+                                                        paddingValues = pdd,
+                                                        multiMedia = multiMedia,
+                                                        thumbnail = viewModelMediaPicker::getThumbnail,
+                                                        media = media.media.media,
+                                                        isSelectedMode = isSelectedMode,
+                                                        itemsSelected = { data ->
+                                                            index.value = data
                                                         },
-                                                        removeItem ={
-                                                            if (multiMedia){
-                                                                if (index.value.isNotEmpty()) {
-                                                                    IconButton(onClick = { onOpenAlertDialog(true) }) {
-                                                                        Icon(imageVector = Icons.Rounded.Delete, contentDescription = null)
-                                                                    }
-                                                                }
-                                                            }
-                                                        },
-                                                        goToTop = {
-                                                            androidx.compose.animation.AnimatedVisibility(
-                                                                visible = showFabMedia,
-                                                                enter = slideInVertically { it * 2 },
-                                                                exit = slideOutVertically { it * 2 },
-                                                                content = {
-                                                                    FloatingActionButton(
-                                                                        onClick = {
-                                                                            scope.launch{
-                                                                                stateLazyGridMedia.animateScrollToItem(0)
-                                                                            }
-                                                                        }
-                                                                    ) {
-                                                                        Icon(imageVector = Icons.Rounded.ExpandLess,contentDescription = null)
-                                                                    }
-                                                                }
-                                                            )
-                                                        },
-                                                        items = if (multiMedia) "${if (index.value.size > 99) "99+" else index.value.size}" else "1"
-                                                    )
-                                                }
-                                            },
-                                            floatingActionButtonFromMediaPicker = {
-                                                if (!isSelectedMode.value){
-                                                    androidx.compose.animation.AnimatedVisibility(
-                                                        visible = showFabMedia,
-                                                        enter = slideInVertically { it * 2 },
-                                                        exit = slideOutVertically { it * 2 },
-                                                        content = {
-                                                            FloatingActionButton(
-                                                                onClick = {
-                                                                    scope.launch{
-                                                                        stateLazyGridMedia.animateScrollToItem(0)
-                                                                    }
-                                                                }
-                                                            ) {
-                                                                Icon(imageVector = Icons.Rounded.ExpandLess,contentDescription = null)
-                                                            }
-                                                        }
+                                                        stateLazyGridPhoto = stateLazyGridMedia,
+                                                        isScrolling = isScrollingMedia,
+                                                        userScrollEnabled = true,
+                                                        selectedIds = index
                                                     )
                                                 }
                                             }
-                                        )
-                                    }
-                                    1 -> {
-                                        MediaByFolder(
-                                            albums = { pdd, goToPhotoByAlbum ->
-                                                when(media.album.stateOfRequestAlbum){
-                                                    StateOfRequest.IDLE, StateOfRequest.START -> {
-                                                        if (media.album.stateOfRequestAlbum == StateOfRequest.IDLE){
-                                                            viewModelMediaPicker.getAlbums()
-                                                        }
-                                                        GridOfMediaLoad(1)
-                                                    }
-                                                    StateOfRequest.END -> {
-                                                        when(media.album.answerOfRequestAlbum){
-                                                            AnswerOfRequest.IDLE, AnswerOfRequest.EMPTY  -> {}
-                                                            AnswerOfRequest.NOT_EMPTY-> {
-                                                                GridOfFoldersLoaded(
-                                                                    paddingValues = pdd,
-                                                                    dataFolder = media.album.album,
-                                                                    stateLazyGridAlbum = stateLazyGridAlbum,
-                                                                    thumbnail = viewModelMediaPicker::getThumbnail,
-                                                                    getItemsByFolder = { route, folderName ->
-                                                                        viewModelMediaPicker.getMediaByAlbum(route)
-                                                                        goToPhotoByAlbum(folderName)
-                                                                    },
-                                                                    isScrolling = isScrollingFolder
-                                                                )
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            },
-                                            mediaByAlbum = { pdd ->
-                                                when(media.mediaByAlbum.stateOfRequestMediaByAlbum){
-                                                    StateOfRequest.IDLE, StateOfRequest.START -> {
-                                                        if (media.mediaByAlbum.stateOfRequestMediaByAlbum == StateOfRequest.IDLE){
-                                                            viewModelMediaPicker.getAlbums()
-                                                        }
-                                                        GridOfMediaLoad(0)
-                                                    }
-                                                    StateOfRequest.END -> {
-                                                        when(media.mediaByAlbum.answerOfRequestMediaByAlbum){
-                                                            AnswerOfRequest.IDLE, AnswerOfRequest.EMPTY  -> {}
-                                                            AnswerOfRequest.NOT_EMPTY-> {
-                                                                GridOfMediaLoaded(
-                                                                    paddingValues = pdd,
-                                                                    multiMedia = multiMedia,
-                                                                    thumbnail = viewModelMediaPicker::getThumbnail,
-                                                                    media = media.mediaByAlbum.mediaByAlbum,
-                                                                    stateLazyGridPhoto = stateLazyGridMediaByAlbum,
-                                                                    isSelectedMode = isSelectedMode,
-                                                                    itemsSelected = { data -> index.value = data},
-                                                                    isScrolling = isScrollingMediaByFolder,
-                                                                    userScrollEnabled = true,
-                                                                    selectedIds = index
-                                                                )
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            },
-                                            bottomAppBarFromMediaPickerToMediaByAlbum = {
-                                                if (isSelectedMode.value){
-                                                    BottomAppBarMediaPicker(
-                                                        addItems = {
-                                                            viewModelMediaPicker.statePicker(StatePicker.ADD)
-                                                        },
-                                                        removeItem ={
-                                                            if (multiMedia){
-                                                                if (index.value.isNotEmpty()) {
-                                                                    IconButton(onClick = { onOpenAlertDialog(true) }) {
-                                                                        Icon(imageVector = Icons.Rounded.Delete, contentDescription = null)
-                                                                    }
+                                        },
+                                        bottomAppBarFromMediaPicker = {
+                                            if (isSelectedMode.value) {
+                                                BottomAppBarMediaPicker(
+                                                    addItems = {
+                                                        viewModelMediaPicker.statePicker(StatePicker.ADD)
+                                                    },
+                                                    removeItem = {
+                                                        if (multiMedia) {
+                                                            if (index.value.isNotEmpty()) {
+                                                                FilledTonalIconButton(onClick = {
+                                                                    onOpenAlertDialog(
+                                                                        true
+                                                                    )
+                                                                }) {
+                                                                    Icon(
+                                                                        imageVector = Icons.Rounded.Delete,
+                                                                        contentDescription = null
+                                                                    )
                                                                 }
                                                             }
-                                                        },
-                                                        goToTop = {
-                                                            androidx.compose.animation.AnimatedVisibility(
-                                                                visible = showFabMediaByFolder,
-                                                                enter = slideInVertically { it * 2 },
-                                                                exit = slideOutVertically { it * 2 },
-                                                                content = {
-                                                                    FloatingActionButton(
-                                                                        onClick = {
-                                                                            scope.launch{
-                                                                                stateLazyGridMediaByAlbum.animateScrollToItem(0)
-                                                                            }
+                                                        } else {
+                                                            Spacer(modifier = Modifier.width(24.dp))
+                                                        }
+                                                    },
+                                                    goToTop = {
+                                                        androidx.compose.animation.AnimatedVisibility(
+                                                            visible = showFabMedia,
+                                                            enter = slideInVertically { it * 2 },
+                                                            exit = slideOutVertically { it * 2 },
+                                                            content = {
+                                                                FloatingActionButton(
+                                                                    onClick = {
+                                                                        scope.launch {
+                                                                            stateLazyGridMedia.animateScrollToItem(
+                                                                                0
+                                                                            )
                                                                         }
-                                                                    ) {
-                                                                        Icon(imageVector = Icons.Rounded.ExpandLess,contentDescription = null)
                                                                     }
+                                                                ) {
+                                                                    Icon(
+                                                                        imageVector = Icons.Rounded.ExpandLess,
+                                                                        contentDescription = null
+                                                                    )
                                                                 }
-                                                            )
-                                                        },
-                                                        items = if (multiMedia) "(${index.value.size})" else ""
-                                                    )
-                                                }
-                                            },
-                                            floatingActionButtonFromMediaPickerToAlbums = {
+                                                            }
+                                                        )
+                                                    },
+                                                    items = if (multiMedia) "${if (index.value.size > 99) "99+" else index.value.size}" else "1"
+                                                )
+                                            }
+                                        },
+                                        floatingActionButtonFromMediaPicker = {
+                                            if (!isSelectedMode.value) {
                                                 androidx.compose.animation.AnimatedVisibility(
-                                                    visible = showFabFolder,
+                                                    visible = showFabMedia,
                                                     enter = slideInVertically { it * 2 },
                                                     exit = slideOutVertically { it * 2 },
                                                     content = {
                                                         FloatingActionButton(
                                                             onClick = {
-                                                                scope.launch{
-                                                                    stateLazyGridAlbum.animateScrollToItem(0)
+                                                                scope.launch {
+                                                                    stateLazyGridMedia.animateScrollToItem(
+                                                                        0
+                                                                    )
                                                                 }
                                                             }
                                                         ) {
-                                                            Icon(imageVector = Icons.Rounded.ExpandLess,contentDescription = null)
+                                                            Icon(
+                                                                imageVector = Icons.Rounded.ExpandLess,
+                                                                contentDescription = null
+                                                            )
                                                         }
                                                     }
                                                 )
-                                            },
-                                            floatingActionButtonFromMediaPickerToMediaByAlbum = {
-                                                if (!isSelectedMode.value){
-                                                    androidx.compose.animation.AnimatedVisibility(
-                                                        visible = showFabMediaByFolder,
-                                                        enter = slideInVertically { it * 2 },
-                                                        exit = slideOutVertically { it * 2 },
-                                                        content = {
-                                                            FloatingActionButton(
-                                                                onClick = {
-                                                                    scope.launch{
-                                                                        stateLazyGridMediaByAlbum.animateScrollToItem(0)
-                                                                    }
-                                                                }
-                                                            ) {
-                                                                Icon(imageVector = Icons.Rounded.ExpandLess,contentDescription = null)
-                                                            }
+                                            }
+                                        }
+                                    )
+                                }
+
+                                1 -> {
+                                    MediaByFolder(
+                                        albums = { pdd, goToPhotoByAlbum ->
+                                            when (media.album.stateOfRequestAlbum) {
+                                                StateOfRequest.IDLE, StateOfRequest.START -> {
+                                                    if (media.album.stateOfRequestAlbum == StateOfRequest.IDLE) {
+                                                        viewModelMediaPicker.getAlbums()
+                                                    }
+                                                    GridOfMediaLoad(1)
+                                                }
+
+                                                StateOfRequest.END -> {
+                                                    when (media.album.answerOfRequestAlbum) {
+                                                        AnswerOfRequest.IDLE, AnswerOfRequest.EMPTY -> {}
+                                                        AnswerOfRequest.NOT_EMPTY -> {
+                                                            GridOfFoldersLoaded(
+                                                                paddingValues = pdd,
+                                                                dataFolder = media.album.album,
+                                                                stateLazyGridAlbum = stateLazyGridAlbum,
+                                                                thumbnail = viewModelMediaPicker::getThumbnail,
+                                                                getItemsByFolder = { route, folderName ->
+                                                                    viewModelMediaPicker.getMediaByAlbum(
+                                                                        route
+                                                                    )
+                                                                    goToPhotoByAlbum(folderName)
+                                                                },
+                                                                isScrolling = isScrollingFolder
+                                                            )
                                                         }
-                                                    )
+                                                    }
                                                 }
                                             }
-                                        )
-                                    }
+                                        },
+                                        mediaByAlbum = { pdd ->
+                                            when (media.mediaByAlbum.stateOfRequestMediaByAlbum) {
+                                                StateOfRequest.IDLE, StateOfRequest.START -> {
+                                                    if (media.mediaByAlbum.stateOfRequestMediaByAlbum == StateOfRequest.IDLE) {
+                                                        viewModelMediaPicker.getAlbums()
+                                                    }
+                                                    GridOfMediaLoad(0)
+                                                }
+
+                                                StateOfRequest.END -> {
+                                                    when (media.mediaByAlbum.answerOfRequestMediaByAlbum) {
+                                                        AnswerOfRequest.IDLE, AnswerOfRequest.EMPTY -> {}
+                                                        AnswerOfRequest.NOT_EMPTY -> {
+                                                            GridOfMediaLoaded(
+                                                                paddingValues = pdd,
+                                                                multiMedia = multiMedia,
+                                                                thumbnail = viewModelMediaPicker::getThumbnail,
+                                                                media = media.mediaByAlbum.mediaByAlbum,
+                                                                stateLazyGridPhoto = stateLazyGridMediaByAlbum,
+                                                                isSelectedMode = isSelectedMode,
+                                                                itemsSelected = { data ->
+                                                                    index.value = data
+                                                                },
+                                                                isScrolling = isScrollingMediaByFolder,
+                                                                userScrollEnabled = true,
+                                                                selectedIds = index
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        bottomAppBarFromMediaPickerToMediaByAlbum = {
+                                            if (isSelectedMode.value) {
+                                                BottomAppBarMediaPicker(
+                                                    addItems = {
+                                                        viewModelMediaPicker.statePicker(StatePicker.ADD)
+                                                    },
+                                                    removeItem = {
+                                                        if (multiMedia) {
+                                                            if (index.value.isNotEmpty()) {
+                                                                FilledTonalIconButton(onClick = {
+                                                                    onOpenAlertDialog(
+                                                                        true
+                                                                    )
+                                                                }) {
+                                                                    Icon(
+                                                                        imageVector = Icons.Rounded.Delete,
+                                                                        contentDescription = null
+                                                                    )
+                                                                }
+                                                            }
+                                                        } else {
+                                                            Spacer(modifier = Modifier.width(24.dp))
+                                                        }
+                                                    },
+                                                    goToTop = {
+                                                        androidx.compose.animation.AnimatedVisibility(
+                                                            visible = showFabMediaByFolder,
+                                                            enter = slideInVertically { it * 2 },
+                                                            exit = slideOutVertically { it * 2 },
+                                                            content = {
+                                                                FloatingActionButton(
+                                                                    onClick = {
+                                                                        scope.launch {
+                                                                            stateLazyGridMediaByAlbum.animateScrollToItem(
+                                                                                0
+                                                                            )
+                                                                        }
+                                                                    }
+                                                                ) {
+                                                                    Icon(
+                                                                        imageVector = Icons.Rounded.ExpandLess,
+                                                                        contentDescription = null
+                                                                    )
+                                                                }
+                                                            }
+                                                        )
+                                                    },
+                                                    items = if (multiMedia) "(${index.value.size})" else "1"
+                                                )
+                                            }
+                                        },
+                                        floatingActionButtonFromMediaPickerToAlbums = {
+                                            androidx.compose.animation.AnimatedVisibility(
+                                                visible = showFabFolder,
+                                                enter = slideInVertically { it * 2 },
+                                                exit = slideOutVertically { it * 2 },
+                                                content = {
+                                                    FloatingActionButton(
+                                                        onClick = {
+                                                            scope.launch {
+                                                                stateLazyGridAlbum.animateScrollToItem(
+                                                                    0
+                                                                )
+                                                            }
+                                                        }
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Rounded.ExpandLess,
+                                                            contentDescription = null
+                                                        )
+                                                    }
+                                                }
+                                            )
+                                        },
+                                        floatingActionButtonFromMediaPickerToMediaByAlbum = {
+                                            if (!isSelectedMode.value) {
+                                                androidx.compose.animation.AnimatedVisibility(
+                                                    visible = showFabMediaByFolder,
+                                                    enter = slideInVertically { it * 2 },
+                                                    exit = slideOutVertically { it * 2 },
+                                                    content = {
+                                                        FloatingActionButton(
+                                                            onClick = {
+                                                                scope.launch {
+                                                                    stateLazyGridMediaByAlbum.animateScrollToItem(
+                                                                        0
+                                                                    )
+                                                                }
+                                                            }
+                                                        ) {
+                                                            Icon(
+                                                                imageVector = Icons.Rounded.ExpandLess,
+                                                                contentDescription = null
+                                                            )
+                                                        }
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    )
                                 }
                             }
                         }
-                        selectedPager.value = it == 0
-                    },
-                )
-            }
-        )
+                    }
+                    selectedPager.value = it == 0
+                },
+            )
+        }
     }
     if (openAlertDialog){
         MessageClearSelection(
