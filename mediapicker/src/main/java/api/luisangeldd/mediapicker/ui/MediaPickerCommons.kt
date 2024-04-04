@@ -60,6 +60,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -144,7 +145,9 @@ internal fun LayoutOfMediaPicker(
     contentFromMediaPicker: @Composable () -> Unit,
 ){
     ModalBottomSheet(
-        modifier = Modifier.displayCutoutPadding().navigationBarsPadding(),
+        modifier = Modifier
+            .displayCutoutPadding()
+            .navigationBarsPadding(),
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
         shape = RoundedCornerShape(0.dp),
@@ -221,22 +224,33 @@ internal fun BottomAppBarMediaPicker(
     BottomAppBar (
         //modifier = Modifier.navigationBarsPadding(),
         actions = {
-            Spacer(modifier = Modifier.width(16.dp))
-            removeItem()
-            BadgedBox(
-                badge = {
-                    Badge {
-                        Text(items)
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                removeItem()
+                FilledTonalButton(onClick = addItems) {
+                    Text("Add ($items)")
+                }
+                /*BadgedBox(
+                    badge = {
+                        Badge {
+
+                        }
                     }
-                }
-            ) {
-                IconButton(onClick = addItems) {
-                    Icon(
-                        imageVector = Icons.Rounded.AddToPhotos,
-                        contentDescription = null
-                    )
-                }
+                ) {
+
+                    IconButton(onClick = addItems) {
+                        Icon(
+                            imageVector = Icons.Rounded.AddToPhotos,
+                            contentDescription = null
+                        )
+                    }
+                }*/
             }
+            //Spacer(modifier = Modifier.width(16.dp))
+
         },
         floatingActionButton = goToTop,
         windowInsets = WindowInsets(0, 0, 0, 0)
