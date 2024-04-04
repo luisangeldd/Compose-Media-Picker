@@ -59,7 +59,7 @@ fun MediaPicker(
     actionStart: (() -> Unit) -> Unit,
     multiMedia: Boolean = true,
     showCarousel: Boolean = true,
-    getMedia: (List<MediaUser>) -> Unit,
+    getMedia: suspend (List<MediaUser>) -> Unit,
     removeItem: ((Int) -> Unit) -> Unit
 ){
     val context = LocalContext.current
@@ -85,7 +85,7 @@ internal fun MediaPickerStart(
     viewModelMediaPicker: ViewModelMediaPicker,
     multiMedia: Boolean,
     showCarousel: Boolean,
-    setMediaCollect: (List<MediaUser>) -> Unit,
+    setMediaCollect: suspend (List<MediaUser>) -> Unit,
     removeItem: ((Int)-> Unit) -> Unit
 ){
     val statePicker by viewModelMediaPicker.statePicker.collectAsState()
