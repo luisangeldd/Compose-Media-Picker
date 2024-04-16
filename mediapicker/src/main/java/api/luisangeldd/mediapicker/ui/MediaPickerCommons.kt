@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
@@ -98,6 +99,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -129,7 +131,13 @@ import api.luisangeldd.mediapicker.data.model.AlbumData
 import api.luisangeldd.mediapicker.data.model.Media
 import api.luisangeldd.mediapicker.data.model.MediaData
 import api.luisangeldd.mediapicker.data.model.MediaUserV0
+import coil.Coil
+import coil.ImageLoader
 import coil.compose.AsyncImage
+import coil.decode.SvgDecoder
+import coil.decode.VideoFrameDecoder
+import coil.request.ImageRequest
+import coil.request.videoFrameMillis
 import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -151,8 +159,7 @@ internal fun LayoutOfMediaPicker(
             .navigationBarsPadding(),
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        shape = RoundedCornerShape(0.dp),
-        //windowInsets = windowInsets
+        shape = RoundedCornerShape(0.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -223,7 +230,6 @@ internal fun BottomAppBarMediaPicker(
     items: String
 ){
     BottomAppBar (
-        //modifier = Modifier.navigationBarsPadding(),
         actions = {
             Row (
                 modifier = Modifier
@@ -233,30 +239,10 @@ internal fun BottomAppBarMediaPicker(
                 verticalAlignment = Alignment.CenterVertically
             ){
                 removeItem()
-                /*FilledTonalIconButton(onClick = { /*TODO*/ }) {
-
-                }*/
                 FilledTonalButton(onClick = addItems) {
                     Text(stringResource(id = R.string.add)+" ($items)")
                 }
-                /*BadgedBox(
-                    badge = {
-                        Badge {
-
-                        }
-                    }
-                ) {
-
-                    IconButton(onClick = addItems) {
-                        Icon(
-                            imageVector = Icons.Rounded.AddToPhotos,
-                            contentDescription = null
-                        )
-                    }
-                }*/
             }
-            //Spacer(modifier = Modifier.width(16.dp))
-
         },
         floatingActionButton = goToTop,
         windowInsets = WindowInsets(0, 0, 0, 0)
@@ -395,8 +381,11 @@ internal fun MediaCarousel(
         ){
             AsyncImage(
                 modifier = Modifier.size(200.dp),
-                model = mediaSelected[page].media.uriMedia,
-                contentDescription = mediaSelected[page].media.uriMedia.toString()
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(mediaSelected[page].media.uriMedia)
+                    //.videoFrameMillis(1000)
+                    .build(),//,
+                contentDescription = mediaSelected[page].media.uriMedia.hashCode().toString()
             )
             Box (modifier = Modifier.size(200.dp), contentAlignment = Alignment.TopEnd){
                 FilledTonalIconButton(
@@ -455,7 +444,6 @@ internal fun GridOfMediaLoad(page: Int){
 internal fun GridOfMediaLoaded(
     paddingValues: PaddingValues,
     multiMedia: Boolean,
-    thumbnail: suspend (Uri, Long, String) -> Bitmap?,
     media:List<MediaData>,
     isSelectedMode: MutableState<Boolean>,
     itemsSelected: (Set<Int>) -> Unit,
@@ -508,14 +496,13 @@ internal fun GridOfMediaLoaded(
         userScrollEnabled = userScrollEnabled,
         content = {
             items(
-                count = media.size,
-                key = { it },//mediaPaging.itemKey{ media -> media.idMedia },
-                //contentType = mediaPaging.itemContentType { "MediaItems" }
-            ){item ->
-                val selected by remember { derivedStateOf { selectedIds.value.contains(item) } }
-                val mime = media[item].mimeType.split('/')[0]
+                items = media,
+                key = { it.idMedia.toInt() }
+            ){ media ->
+                val selected by remember { derivedStateOf { selectedIds.value.contains(media.idMedia.toInt()) } }
+                val mime = media.mimeType.split('/')[0]
                 MediaItem(
-                    itemPosition = if (selected) selectedIds.value.indexOf(item) + 1 else null,
+                    itemPosition = if (selected) selectedIds.value.indexOf(media.idMedia.toInt()) + 1 else null,
                     multiMedia = multiMedia,
                     inSelectionMode = inSelectionMode,
                     selected = selected,
@@ -528,13 +515,13 @@ internal fun GridOfMediaLoaded(
                                     indication = null,
                                     onValueChange = {
                                         if (it) {
-                                            selectedIds.value += item
+                                            selectedIds.value += media.idMedia.toInt()
                                             if (prevItem != null) {
                                                 selectedIds.value = selectedIds.value.minus(prevItem)
                                             }
-                                            onPrevItem(item)
+                                            onPrevItem(media.idMedia.toInt())
                                         } else {
-                                            selectedIds.value -= item
+                                            selectedIds.value -= media.idMedia.toInt()
                                             if (prevItem != null) onPrevItem(null)
                                         }
                                     }
@@ -552,9 +539,9 @@ internal fun GridOfMediaLoaded(
                                             indication = null,
                                             onValueChange = {
                                                 if (it) {
-                                                    selectedIds.value += item
+                                                    selectedIds.value += media.idMedia.toInt()
                                                 } else {
-                                                    selectedIds.value -= item
+                                                    selectedIds.value -= media.idMedia.toInt()
                                                 }
                                             }
                                         )
@@ -567,9 +554,9 @@ internal fun GridOfMediaLoaded(
                                         indication = null, // do not show a ripple
                                         onValueChange = {
                                             if (it) {
-                                                selectedIds.value += item
+                                                selectedIds.value += media.idMedia.toInt()
                                             } else {
-                                                selectedIds.value -= item
+                                                selectedIds.value -= media.idMedia.toInt()
                                             }
                                         }
                                     )
@@ -577,46 +564,14 @@ internal fun GridOfMediaLoaded(
                             }
                         ),
                     imageItem = {
-                        /*val placeHolder = rememberBlurHashPainter(
-                            blurString = blurHashProvider(media[item].uriMedia.toString(), LocalContext.current),
-                            width = 150,
-                            height = 150,
-                        )
-
-                        Card(
-                            elevation = 24.dp,
-                            shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .then(modifier),
-                        ) {
-                            AsyncImage(
-                                model = media[item].uriMedia.toString(),
-                                contentDescription = null,
-                                placeholder = placeHolder,
-                                contentScale = ContentScale.FillBounds,
-                                error = placeHolder,
-                                modifier = Modifier
-                                    .width(250.dp)
-                                    .height(300.dp)
-                            )
-                        }*/
                         GetImage (
                             modifier = Modifier.scale(2f),
-                            thumbnail = {
-                                thumbnail(
-                                    media[item].uriMedia,
-                                    media[item].idMedia,
-                                    media[item].mimeType
-                                )
-                            },
+                            url = media.uriMedia.toString(),
                             contentTop = {
                                 when (mime){
-                                    ConstantsMediaPicker.MIME_IMAGE -> {}
+                                    ConstantsMediaPicker.MIME_IMAGE -> {null}
                                     ConstantsMediaPicker.MIME_VIDEO -> {
                                         Icon(
-                                            modifier = Modifier.scale(2f),
                                             imageVector = Icons.Rounded.PlayCircle,
                                             contentDescription = null
                                         )
@@ -626,17 +581,16 @@ internal fun GridOfMediaLoaded(
                         )
                     }
                 )
-                isScrolling.value = (item >= 18)
             }
         }
     )
+    isScrolling.value = (stateLazyGridPhoto.firstVisibleItemIndex >= 6)
 }
 @Composable
 internal fun GridOfFoldersLoaded(
     paddingValues: PaddingValues,
     dataFolder: List<AlbumData>,
     stateLazyGridAlbum: LazyGridState = rememberLazyGridState(),
-    thumbnail: suspend (Uri, Long, String) -> Bitmap?,
     getItemsByFolder: (String, String) -> Unit,
     isScrolling: MutableState<Boolean>
 ){
@@ -655,17 +609,11 @@ internal fun GridOfFoldersLoaded(
                             FOLDER_CONTENT argSend dataFolder[item].pathFromFolder.nameWithoutExtension
                         )
                     },
-                    thumbnail = {
-                        thumbnail(
-                            dataFolder[item].uri,
-                            dataFolder[item].id,
-                            dataFolder[item].mimeType
-                        )
-                    },
+                    url = dataFolder[item].uri.toString(),
                     titleFolder = dataFolder[item].pathFromFolder.nameWithoutExtension,
                     items = dataFolder[item].itemsFolder
                 )
-                isScrolling.value = (item >= 6)
+                isScrolling.value = (stateLazyGridAlbum.firstVisibleItemIndex >= 4)
             }
         }
     )
@@ -718,147 +666,10 @@ internal fun MediaByFolder(
         )
     }
 }
-/*@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-internal fun GridOfMediaThumbnailFolder(
-    stateRequestMediaByAlbums: StateOfRequest,
-    statusRequestMediaByAlbums: StatusOfRequest,
-    stateLazyGridAlbum: LazyGridState,
-    stateLazyGridPhotoByAlbum: LazyGridState,
-    dataFolder: List<Album>,
-    dataByFolder: List<Media>,
-    onSelectionMode: (Boolean) -> Unit,
-    itemsSelected: (Set<Int>) -> Unit,
-    thumbnail: suspend (Uri, Long, String) -> Bitmap?,
-    selectedIds: MutableState<Set<Int>> = rememberSaveable { mutableStateOf(emptySet()) },
-    getItemsByFolder: (String) -> Unit
-){
-    val inSelectionMode by remember { derivedStateOf { selectedIds.value.isNotEmpty() } }
-    val state = rememberLazyGridState()
-    val autoScrollSpeed = remember { mutableFloatStateOf(0f) }
-    val (isDrag,onDrag) = rememberSaveable { mutableStateOf(false) }
-    val (key,onKey) = rememberSaveable { mutableStateOf("") }
-    onSelectionMode(selectedIds.value.isNotEmpty())
-    LaunchedEffect(autoScrollSpeed.floatValue) {
-        if (autoScrollSpeed.floatValue != 0f) {
-            while (isActive) {
-                state.scrollBy(autoScrollSpeed.floatValue)
-                delay(10)
-            }
-        }
-    }
-    itemsSelected(selectedIds.value)
-    val navController = rememberNavController()
-    val onBackPressed: () -> Unit = { navController.popBackStack() }
-    val (isSelectedMode, onSelectedMode) = rememberSaveable { mutableStateOf(false) }
-    val index: MutableState<Set<Int>> = rememberSaveable { mutableStateOf(emptySet()) }
-    NavHost(
-        navController = navController,
-        startDestination = ConstantsMediaPicker.FOLDERS
-    ){
-        composable(
-            route = ConstantsMediaPicker.FOLDERS,
-            content = {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed( 2 ),
-                    modifier = Modifier.fillMaxSize(),
-                    state = stateLazyGridAlbum,
-                    contentPadding = PaddingValues(horizontal = 3.dp),
-                    content = {
-                        items(dataFolder.size, key = {it}){item ->
-                            MediaFolder(
-                                modifier = Modifier.clickable {
-                                    getItemsByFolder(dataFolder[item].pathFromFolder.absolutePath)
-                                    navController.navigate(ConstantsMediaPicker.FOLDER_CONTENT argSend dataFolder[item].pathFromFolder.nameWithoutExtension)
-                                },
-                                thumbnail = {
-                                    thumbnail(
-                                        dataFolder[item].uri,
-                                        dataFolder[item].id,
-                                        dataFolder[item].mimeType
-                                    )
-                                },
-                                titleFolder = dataFolder[item].pathFromFolder.nameWithoutExtension,
-                                items = dataFolder[item].itemsFolder
-                            )
-                        }
-                    }
-                )
-            }
-        )
-        composable(
-            route = ConstantsMediaPicker.FOLDER_CONTENT arg ConstantsMediaPicker.FOLDER_NAME,
-            arguments = listOf(navArgument(ConstantsMediaPicker.FOLDER_NAME) {
-                type = NavType.StringType
-            }),
-            content = {
-                val folder = it.arguments?.getString(ConstantsMediaPicker.FOLDER_NAME) ?: ""
-                Column (
-                    modifier = Modifier.fillMaxSize()
-                ){
-                    TopAppBar(
-                        title = {
-                            Text(text = folder)
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = onBackPressed){
-                                Icon(imageVector = Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = null)
-                            }
-                        },
-                        actions = {
-
-                        }
-                    )
-                    when(stateRequestMediaByAlbums){
-                        StateOfRequest.IDLE, StateOfRequest.START-> {
-                            GridOfMediaLoad(0)
-                        }
-                        StateOfRequest.END -> {
-                            when(statusRequestMediaByAlbums){
-                                StatusOfRequest.IDLE -> {
-
-                                }
-                                StatusOfRequest.EMPTY -> {
-
-                                }
-                                StatusOfRequest.NOT_EMPTY ->{
-                                    LazyVerticalGrid(
-                                        columns = GridCells.Fixed( 3 ),
-                                        modifier = Modifier,
-                                        state = stateLazyGridPhotoByAlbum,
-                                        contentPadding = PaddingValues(horizontal = 3.dp),
-                                        content = {
-                                            items(dataByFolder.size, key = { it }){item ->
-                                                MediaItemByFolder(
-                                                    imageItem = {
-                                                        GetImage(
-                                                            modifier = Modifier.scale(3f),
-                                                            thumbnail = {
-                                                                thumbnail(
-                                                                    dataByFolder[item].uriMedia,
-                                                                    dataByFolder[item].idMedia,
-                                                                    dataByFolder[item].mimeType
-                                                                )
-                                                            }
-                                                        )
-                                                    }
-                                                )
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        )
-    }
-}*/
 @Composable
 internal fun MediaFolder(
     modifier: Modifier = Modifier,
-    thumbnail: suspend () -> Bitmap?,
+    url: String,
     titleFolder: String,
     items: Int
 ){
@@ -875,10 +686,7 @@ internal fun MediaFolder(
         ) {
             GetImage(
                 modifier = Modifier.scale(3f),
-                thumbnail = thumbnail,
-                contentTop = {
-
-                }
+                url = url,
             )
         }
         Text(modifier = Modifier,text = titleFolder, maxLines = 1)
@@ -935,22 +743,6 @@ internal fun MediaItem(
         }
     }
 }
-/*@Composable
-internal fun MediaItemByFolder(
-    modifier: Modifier = Modifier,
-    imageItem: @Composable () -> Unit
-) {
-    Surface(
-        modifier = modifier
-            .aspectRatio(1f)
-            .padding(3.dp),
-        tonalElevation = 3.dp
-    ) {
-        Box (contentAlignment = Alignment.Center) {
-            imageItem()
-        }
-    }
-}*/
 @Composable
 internal fun ChipOfMenu(
     text : String,
@@ -1050,44 +842,19 @@ internal fun MyCenterTextInCanvas(item:String, bdColor: Color, bgColor: Color) {
 @Composable
 internal fun GetImage(
     modifier: Modifier = Modifier,
-    thumbnail: suspend () -> Bitmap?,
+    url: String,
     contentTop: @Composable (() -> Unit)? = null
 ){
-    val bitmap = remember { mutableStateOf<Bitmap?>(null) }
-    LaunchedEffect(key1 = bitmap, block = {
-        if (bitmap.value == null) {
-            bitmap.value = thumbnail()
-        }
-    })
-    Crossfade(
-        targetState = bitmap.value,
-        label = "transitionBitmap"
-    ) {
-        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center){
-            when(it){
-                is Bitmap -> {
-                    Image(
-                        bitmap = it.asImageBitmap(),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .matchParentSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                    when (contentTop){
-                        is () -> Unit-> {
-                            contentTop()
-                        }
-                    }
-                }
-                else ->{
-                    Icon(
-                        painter = painterResource(id = R.drawable.image_load),
-                        contentDescription = null,
-                        modifier = Modifier.scale(2f)
-                    )
-                }
-            }
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+        AsyncImage(
+            modifier = Modifier.size(200.dp),
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(url)
+                .build(),
+            contentDescription = url.hashCode().toString()
+        )
+        if (contentTop != null){
+            contentTop()
         }
     }
 }

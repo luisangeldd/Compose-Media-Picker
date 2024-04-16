@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             // control de boton hacia atras pruebas -- inicio
-            /*var backPressCount by rememberSaveable { mutableIntStateOf(0) }
+            var backPressCount by rememberSaveable { mutableIntStateOf(0) }
             var resetCounterJob by remember { mutableStateOf<Job?>(null) }
             val resetCounterAfterDelay: (Int) -> Job = {
                 val resetDelayMillis = 5000L
@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
                     Log.d("backStack","backStack: OnBackPressedCallback")
                     backCallback.remove()
                 }
-            }*/
+            }
             // control de boton hacia atras pruebas -- fin
             // permisos solicitados al telefono
             val mainViewModel by viewModels<MainViewModel>()

@@ -37,6 +37,10 @@ import api.luisangeldd.mediapicker.core.StateOfRequest
 import api.luisangeldd.mediapicker.core.StatePicker
 import api.luisangeldd.mediapicker.data.model.MediaUser
 import api.luisangeldd.mediapicker.data.model.MediaUserV0
+import coil.Coil
+import coil.ImageLoader
+import coil.decode.SvgDecoder
+import coil.decode.VideoFrameDecoder
 import kotlinx.coroutines.launch
 
 /**
@@ -71,6 +75,15 @@ fun MediaPicker(
     removeAllItems: (() -> Unit) -> Unit
 ){
     val context = LocalContext.current
+    Coil.setImageLoader(
+        ImageLoader.Builder(context)
+            .components {
+                add(SvgDecoder.Factory()) // Add SVG decoder to support SVG images
+                add(VideoFrameDecoder.Factory()) // // Add VIDEO decoder to support Video
+            }
+            .build()
+    )
+
     val viewModelMediaPicker = viewModel<ViewModelMediaPicker>(
         factory = viewModelFactory {
             initializer {
@@ -201,7 +214,6 @@ internal fun MediaPickerStart(
                                                     GridOfMediaLoaded(
                                                         paddingValues = pdd,
                                                         multiMedia = multiMedia,
-                                                        thumbnail = viewModelMediaPicker::getThumbnail,
                                                         media = media.media.media,
                                                         isSelectedMode = isSelectedMode,
                                                         itemsSelected = { data ->
@@ -313,7 +325,6 @@ internal fun MediaPickerStart(
                                                                 paddingValues = pdd,
                                                                 dataFolder = media.album.album,
                                                                 stateLazyGridAlbum = stateLazyGridAlbum,
-                                                                thumbnail = viewModelMediaPicker::getThumbnail,
                                                                 getItemsByFolder = { route, folderName ->
                                                                     viewModelMediaPicker.getMediaByAlbum(
                                                                         route
@@ -343,7 +354,6 @@ internal fun MediaPickerStart(
                                                             GridOfMediaLoaded(
                                                                 paddingValues = pdd,
                                                                 multiMedia = multiMedia,
-                                                                thumbnail = viewModelMediaPicker::getThumbnail,
                                                                 media = media.mediaByAlbum.mediaByAlbum,
                                                                 stateLazyGridPhoto = stateLazyGridMediaByAlbum,
                                                                 isSelectedMode = isSelectedMode,
@@ -406,7 +416,7 @@ internal fun MediaPickerStart(
                                                             }
                                                         )
                                                     },
-                                                    items = if (multiMedia) "(${index.value.size})" else "1"
+                                                    items = if (multiMedia) "(${if (index.value.size > 99) "99+" else index.value.size})" else "1"
                                                 )
                                             }
                                         },
@@ -464,7 +474,7 @@ internal fun MediaPickerStart(
                         }
                     }
                     selectedPager.value = it == 0
-                },
+                }
             )
         }
     }
@@ -478,6 +488,9 @@ internal fun MediaPickerStart(
     LaunchedEffect(key1 = statePicker, block = {
         when (statePicker) {
             StatePicker.OPEN -> {
+                stateLazyGridMedia.animateScrollToItem(0)
+                stateLazyGridAlbum.animateScrollToItem(0)
+                stateLazyGridMediaByAlbum.animateScrollToItem(0)
                 indexAux.value = index.value
             }
             else -> {
@@ -493,7 +506,7 @@ internal fun MediaPickerStart(
                         }
                     }
                     StatePicker.ADD -> {
-                        viewModelMediaPicker.setMedia(index.value.map { MediaUserV0(item = it, media = media.media.media[it]) })
+                        viewModelMediaPicker.setMedia(index.value.map { MediaUserV0(item = it, media = media.media.media.find { dt -> dt.idMedia.toInt() == it }!!) })
                     }
                     else -> {}
                 }
@@ -501,7 +514,6 @@ internal fun MediaPickerStart(
                 if (!selectedPager.value) {
                     if (pagerState.currentPage-1 >=0) { pagerState.scrollToPage(pagerState.currentPage-1) }
                 }
-                stateLazyGridMedia.animateScrollToItem(0)
             }
         }
     })
