@@ -5,15 +5,11 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import api.luisangeldd.mediapicker.core.AnswerOfRequest
-import api.luisangeldd.mediapicker.core.ConstantsMediaPicker
 import api.luisangeldd.mediapicker.core.MediaPickerModule
 import api.luisangeldd.mediapicker.core.MediaPickerModuleImpl
-import api.luisangeldd.mediapicker.core.StatePicker
 import api.luisangeldd.mediapicker.core.StateOfRequest
-import api.luisangeldd.mediapicker.core.StatusOfRequest
-import api.luisangeldd.mediapicker.data.model.DataOfMedia
+import api.luisangeldd.mediapicker.core.StatePicker
 import api.luisangeldd.mediapicker.data.model.Media
-import api.luisangeldd.mediapicker.data.model.MediaUser
 import api.luisangeldd.mediapicker.data.model.MediaUserV0
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async

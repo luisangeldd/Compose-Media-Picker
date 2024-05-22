@@ -1,7 +1,6 @@
 package api.luisangeldd.mediapicker.data
 
 import android.net.Uri
-import api.luisangeldd.mediapicker.data.model.Media
 import api.luisangeldd.mediapicker.data.model.MediaData
 import api.luisangeldd.mediapicker.data.repository.MediaPickerRepo
 

@@ -11,11 +11,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.ExpandLess
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -64,6 +62,7 @@ import kotlinx.coroutines.launch
  * @param getMedia returns a list of Media type objects which allows recovering the Uri and File of the selected files.
  * @param removeItem returns a function to remove a single item at getMedia model return.
  * @param removeAllItems returns a function to remove all items at getMedia model return.
+ * @param actionUserCloseMedia returns a function to remove all items at getMedia model return.
  */
 @Composable
 fun MediaPicker(
@@ -72,7 +71,8 @@ fun MediaPicker(
     showCarousel: Boolean = true,
     getMedia: suspend (List<MediaUser>) -> Unit,
     removeItem: ((Int) -> Unit) -> Unit,
-    removeAllItems: (() -> Unit) -> Unit
+    removeAllItems: (() -> Unit) -> Unit,
+    actionUserCloseMedia: () -> Unit
 ){
     val context = LocalContext.current
     Coil.setImageLoader(
@@ -98,7 +98,8 @@ fun MediaPicker(
         showCarousel = showCarousel,
         setMediaCollect = getMedia,
         removeItem = removeItem,
-        removeAllItems = removeAllItems
+        removeAllItems = removeAllItems,
+        actionUserCloseMedia = actionUserCloseMedia
     )
 }
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -109,7 +110,8 @@ internal fun MediaPickerStart(
     showCarousel: Boolean,
     setMediaCollect: suspend (List<MediaUser>) -> Unit,
     removeItem: ((Int)-> Unit) -> Unit,
-    removeAllItems: (() -> Unit) -> Unit
+    removeAllItems: (() -> Unit) -> Unit,
+    actionUserCloseMedia: () -> Unit
 ){
     val statePicker by viewModelMediaPicker.statePicker.collectAsState()
     val media by viewModelMediaPicker.dataOfMedia.collectAsState()
@@ -173,7 +175,7 @@ internal fun MediaPickerStart(
     }
     if (statePicker == StatePicker.OPEN) {
         LayoutOfMediaPicker(
-            onDismissRequest = { viewModelMediaPicker.statePicker(StatePicker.DRAG) },
+            onDismissRequest = { actionUserCloseMedia();viewModelMediaPicker.statePicker(StatePicker.DRAG) },
             sheetState = bottomSheetState,
             topAppBarFromMediaPicker = {
                 TopAppBarMediaPicker(
@@ -188,7 +190,7 @@ internal fun MediaPickerStart(
                             scope.launch { pagerState.scrollToPage(pagerState.currentPage+1) }
                         }
                     },
-                    closeMediaPicker = { viewModelMediaPicker.statePicker(StatePicker.CLOSE) }
+                    closeMediaPicker = { actionUserCloseMedia();viewModelMediaPicker.statePicker(StatePicker.CLOSE) }
                 )
             }
         ) {
@@ -231,7 +233,7 @@ internal fun MediaPickerStart(
                                             if (isSelectedMode.value) {
                                                 BottomAppBarMediaPicker(
                                                     addItems = {
-                                                        viewModelMediaPicker.statePicker(StatePicker.ADD)
+                                                        actionUserCloseMedia();viewModelMediaPicker.statePicker(StatePicker.ADD)
                                                     },
                                                     removeItem = {
                                                         if (multiMedia) {

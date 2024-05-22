@@ -10,7 +10,6 @@ import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
@@ -41,7 +40,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import api.luisangeldd.mediapicker.data.model.MediaUser
 import api.luisangeldd.mediapicker.ui.MediaPicker
 import com.luisangeldd.mediapicker.ui.theme.MediaPickerTheme
 import kotlinx.coroutines.CoroutineScope
@@ -103,6 +101,7 @@ class MainActivity : ComponentActivity() {
             var removeItem: (Int) -> Unit = {}
             var removeAllItems: () -> Unit = {}
             val scope = rememberCoroutineScope()
+            var text by remember { mutableStateOf("") }
             // recuerda debes de solicilitar permisos de almacenamiento para poder acceder al contenidp  de tu telefono
             // en este caso se uso un rememberLauncherForActivityResult pero podrias usar cualquier otra libreria que conciderara adecuada
             // recuerda crear una funcion de disparo como "action" ya que esta recuperar la accion de mostrar el contenido
@@ -111,11 +110,13 @@ class MainActivity : ComponentActivity() {
                 onResult = { perms ->
                     scope.launch {
                         if (perms[permissionsToRequest[0]] == true && perms[permissionsToRequest[1]] == true) {
+                            text = "abierto"
                             action() // funcion de disparo cuando se den los permisos al presionar el boton se consume el contenido de tu telefono
                         }
                     }
                 }
             )
+
             MediaPickerTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -136,6 +137,9 @@ class MainActivity : ComponentActivity() {
                             },
                             removeAllItems = {
                                 removeAllItems = it
+                            },
+                            actionUserCloseMedia = {
+                                text = "cerrado"
                             }
                         )
                         Box (modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
@@ -146,6 +150,7 @@ class MainActivity : ComponentActivity() {
                                 Icon(modifier = Modifier.size(100.dp),imageVector = Icons.Rounded.Add, contentDescription = null)
                             }
                         }
+                        Text(text = text)
                         Box (modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
                             Button(onClick = { removeItem(1) }) {
                                 Text(text = "Remove first item")

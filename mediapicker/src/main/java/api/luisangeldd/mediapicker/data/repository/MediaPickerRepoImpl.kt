@@ -21,7 +21,6 @@ import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.MIME_IMAGE
 import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.MIME_VIDEO
 import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.VIDEO_EXTENSIONS_SUPPORT
 import api.luisangeldd.mediapicker.data.model.AlbumData
-import api.luisangeldd.mediapicker.data.model.Media
 import api.luisangeldd.mediapicker.data.model.MediaData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -146,6 +145,7 @@ internal class MediaPickerRepoImpl(private val context: Context) : MediaPickerRe
             Files.FileColumns.MIME_TYPE,
             Files.FileColumns.TITLE
         )
+        @SuppressLint("Recycle")
         private suspend fun queryUri(
             contentResolver: ContentResolver,
             uri: Uri,

@@ -1,13 +1,8 @@
 package api.luisangeldd.mediapicker.ui
 
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
-import android.net.Uri
-import android.os.Build
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,20 +16,15 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -50,13 +40,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
-import androidx.compose.material.icons.rounded.AddToPhotos
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -64,7 +52,6 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -93,16 +80,13 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
@@ -128,16 +112,10 @@ import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.FOLDER_NAME
 import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.arg
 import api.luisangeldd.mediapicker.core.ConstantsMediaPicker.argSend
 import api.luisangeldd.mediapicker.data.model.AlbumData
-import api.luisangeldd.mediapicker.data.model.Media
 import api.luisangeldd.mediapicker.data.model.MediaData
 import api.luisangeldd.mediapicker.data.model.MediaUserV0
-import coil.Coil
-import coil.ImageLoader
 import coil.compose.AsyncImage
-import coil.decode.SvgDecoder
-import coil.decode.VideoFrameDecoder
 import coil.request.ImageRequest
-import coil.request.videoFrameMillis
 import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -154,9 +132,7 @@ internal fun LayoutOfMediaPicker(
     contentFromMediaPicker: @Composable () -> Unit,
 ){
     ModalBottomSheet(
-        modifier = Modifier
-            .displayCutoutPadding()
-            .navigationBarsPadding(),
+        modifier = Modifier,
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
         shape = RoundedCornerShape(0.dp)
@@ -248,7 +224,6 @@ internal fun BottomAppBarMediaPicker(
         windowInsets = WindowInsets(0, 0, 0, 0)
     )
 }
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun ViewOfMedia(
     state: PagerState,
